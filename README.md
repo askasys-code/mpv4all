@@ -13,7 +13,7 @@ Toggle functions is the main feature.
 - <kbd> CTRL+3 </kbd> - Activate RAVU-Zoom shader for upscaling, this is usually lighter than FSRCNNX but less effective.
 - <kbd> CTRL+4 </kbd> - 1 + Film Grain.
 - <kbd> CTRL+5 </kbd> - 2 + Film Grain.
-- <kbd> CTRL+6 </kbd> - 6 + Film Grain.
+- <kbd> CTRL+6 </kbd> - 3 + Film Grain.
 - <kbd> CTRL+9 </kbd> - Activate Film Grain only.
 - <kbd> CTRL+0 </kbd> - Deactivate all the shaders.
 - <kbd> CTRL+\ </kbd> - Display actual shaders.
