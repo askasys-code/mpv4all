@@ -24,7 +24,7 @@ Toggle functions is the main feature.
 - <kbd> A </kbd> - Boost rear audio channels. Very good effect in combination of upmix to 7.1ch
 
 
-For HDR videos, you have to rename your file like this: `The Hobbit - An Unexpected Journey - HDR.mkv` 
+For HDR videos, you have to rename your file like this: `The Hobbit - HDR.mkv` 
 The most important thing is the word HDR in the file name, otherwise don't work.
 
 ## System Requirement
