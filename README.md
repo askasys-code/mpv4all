@@ -22,6 +22,7 @@ Toggle functions is the main feature.
 - <kbd> CTRL+d </kbd> - Activate bwdif deinterlace.
 - <kbd> a </kbd> - Upmix audio from Stereo 2.0ch to Surround 7.1ch
 - <kbd> A </kbd> - Boost rear audio channels. Very good effect in combination of upmix to 7.1ch
+- <kbd> shift+c </kbd> - Auto crop function.
 
 
 For HDR videos, you have to rename your file like this: `The Hobbit - HDR.mkv` 
