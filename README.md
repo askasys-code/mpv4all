@@ -10,7 +10,7 @@ Toggle functions is the main feature.
 - <kbd> \ </kbd> - Activate frame interpolation. 
 - <kbd> CTRL+1 </kbd> - Activate FSRCNNX shader for upscaling Movie/Live Action/3D contents.
 - <kbd> CTRL+2 </kbd> - Activate FSRCNNX shader for upscaling Anime contents.
-- <kbd> CTRL+3 </kbd> - Activate a light shader, RAVU-Zoom, for universal upscaling.
+- <kbd> CTRL+3 </kbd> - Activate RAVU-Zoom shader for upscaling, this is usually lighter than FSRCNNX but less effective.
 - <kbd> CTRL+4 </kbd> - 1 + Film Grain.
 - <kbd> CTRL+5 </kbd> - 2 + Film Grain.
 - <kbd> CTRL+6 </kbd> - 6 + Film Grain.
