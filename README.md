@@ -1,6 +1,6 @@
 # mpv4all
 
-My personal mpv configuration for best quality.
+My personal mpv configuration for the video best quality.
 
 Toggle functions is the main feature.
 
