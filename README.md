@@ -57,3 +57,6 @@ Also, change `gpu-api=vulkan` to `gpu-api=auto` if your hardware don't support V
 
 
 Tested with a GTX 1060 and an HDR10 60Hz monitor. 
+
+
+All scripts and shaders are the property of their rightful owners. I have only configured mpv.conf and input.conf.
