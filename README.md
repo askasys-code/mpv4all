@@ -1,6 +1,8 @@
 # mpv4all
 
-My personal mpv configuration for the best quality experience.
+So many mpv configs but still not satisfied? Try this, and you won't regret it.
+
+This is my personal mpv configuration for the best quality experience.
 
 Toggle functions is the main feature.
 
