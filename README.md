@@ -44,6 +44,7 @@ ______________________________________________________
 ### Audio functions (Only for Surround audio devices/drivers)
 
 - <kbd> a </kbd> - Upmix audio from Stereo 2.0ch to Surround 7.1ch
+- <kbd> Alt+a </kbd> - Downmix audio from Surround to Stereo 2.0ch
 - <kbd> A </kbd> - Boost rear audio channels. Very good effect when you watch anime and movies.
 - <kbd> CTRL+a </kbd> - Listen only rear channels, just for fun. This works even for native 5.1 and 7.1 audio tracks.
 
