@@ -9,7 +9,7 @@ Toggle functions is the main feature.
 
 ### Video functions
 
-- <kbd> \ </kbd> - Activate frame interpolation. 
+- <kbd> \ </kbd> - Activate frame interpolation.
 - <kbd> CTRL+1 </kbd> - Activate FSRCNNX shader for upscaling Movie/Live Action/3D contents.
 - <kbd> CTRL+2 </kbd> - Activate FSRCNNX shader for upscaling Anime contents.
 - <kbd> CTRL+3 </kbd> - Activate RAVU-Zoom shader for upscaling, this is usually lighter than FSRCNNX but less effective.
@@ -22,6 +22,7 @@ Toggle functions is the main feature.
 - <kbd> Alt+LEFT </kbd> -  Video rotate LEFT
 - <kbd> Alt+RIGHT </kbd> - Video rotate RIGHT
 - <kbd> CTRL+d </kbd> - Activate bwdif deinterlace.
+- <kbd> b </kbd> - Activate blur edges.
 
 ______________________________________________________
 
