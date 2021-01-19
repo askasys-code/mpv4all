@@ -8,7 +8,7 @@ Toggle functions is the main feature.
 
 ### This config is for NVIDIA users and Surround Audio enthusiasts.
 
-Change `hwdec=nvdec` to `hwdec=auto` if you have an AMD or Intel GPU. Also, change `gpu-api=vulkan` to `gpu-api=auto` if your hardware don't support Vulkan.
+Change `hwdec=nvdec` to `hwdec=auto-copy` if you have an AMD or Intel GPU. Also, change `gpu-api=vulkan` to `gpu-api=auto` if your hardware don't support Vulkan.
 
 
 ## Software Requirements
