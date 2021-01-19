@@ -36,6 +36,11 @@ ______________________________________________________
 For HDR videos, you have to rename your file like this: `The Hobbit - HDR.mkv` 
 The most important thing is the word HDR in the file name, otherwise don't work.
 
+
+
+
+
+
 ## System Requirement
 At least a quad core CPU and a discrete GPU.  
 This config is for NVIDIA users.
@@ -45,4 +50,4 @@ Change `hwdec=nvdec` to `hwdec=auto` if you have an AMD or Intel GPU.
 Also, change `gpu-api=vulkan` to `gpu-api=auto` if your hardware don't support Vulkan.
 
 
-Tested with a GTX 1060, Dolby Atmos driver for Windows 10 and an HDR10 monitor. 
+Tested with a GTX 1060 and an HDR10 60Hz monitor. 
