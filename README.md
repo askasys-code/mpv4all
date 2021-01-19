@@ -38,7 +38,7 @@ Change `hwdec=nvdec` to `hwdec=auto` if you have an AMD or Intel GPU. Also, chan
 - <kbd> CTRL+d </kbd> - Activate bwdif deinterlace.
 - <kbd> b </kbd> - Activate blur edges.
 - <kbd> shift+c </kbd> - Auto crop function.
-
+- <kbd> shift+w </kbd> - Webm Maker. # instruction here: https://github.com/ekisu/mpv-webm
 ______________________________________________________
 
 ### Audio functions (Only for Surround audio devices)
