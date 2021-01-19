@@ -32,15 +32,20 @@ ______________________________________________________
 - <kbd> A </kbd> - Boost rear audio channels. Very good effect when you watch anime and movies.
 - <kbd> shift+c </kbd> - Auto crop function.
 
+## Example of Boosted Upmix Surround 7.1ch
+
+<p align="center"><img width=100% src="https://i.imgur.com/tcQtpto.jpg" alt="Boosted Upmix Surround 7.1ch"></p>
+
 ### *tested with Dolby Atmos audio driver for Windows 10. 
 
 For HDR videos, you have to rename your file like this: `The Hobbit - HDR.mkv` 
 The most important thing is the word HDR in the file name, otherwise don't work.
 
+##Example of FSRCNNX + Film Grain + Blur Edges
 
+To verify if the shaders are working, press <kbd> i </kbd> then <kbd> 2 </kbd>.
 
-
-
+<p align="center"><img width=100% src="https://i.imgur.com/hVIc6bk.jpg" alt="Example of FSRCNNX + Film Grain + Blur Edges"></p>
 
 ## System Requirement
 At least a quad core CPU and a discrete GPU.  
