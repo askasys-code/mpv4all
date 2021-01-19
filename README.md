@@ -56,7 +56,7 @@ ______________________________________________________
 For HDR videos, you have to rename your file like this: `The Hobbit - HDR.mkv` 
 The most important thing is the word HDR in the file name, otherwise don't work.
 
-##Example of FSRCNNX + Film Grain + Blur Edges
+## Example of FSRCNNX + Film Grain + Blur Edges
 
 To verify if the shaders are working, press <kbd> i </kbd> then <kbd> 2 </kbd>.
 
