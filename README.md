@@ -41,7 +41,7 @@ Change `hwdec=nvdec` to `hwdec=auto` if you have an AMD or Intel GPU. Also, chan
 - <kbd> shift+w </kbd> - Webm Maker. # instructions here: https://github.com/ekisu/mpv-webm
 ______________________________________________________
 
-### Audio functions (Only for Surround audio devices)
+### Audio functions (Only for Surround audio devices/drivers)
 
 - <kbd> a </kbd> - Upmix audio from Stereo 2.0ch to Surround 7.1ch
 - <kbd> A </kbd> - Boost rear audio channels. Very good effect when you watch anime and movies.
