@@ -45,6 +45,7 @@ ______________________________________________________
 
 - <kbd> a </kbd> - Upmix audio from Stereo 2.0ch to Surround 7.1ch
 - <kbd> A </kbd> - Boost rear audio channels. Very good effect when you watch anime and movies.
+- <kbd> CTRL+a </kbd> - Listen only rear channels, just for fun. This work even for native 5.1 and 7.1 audio tracks.
 
 ## Example of Boosted Upmix Surround 7.1ch
 
