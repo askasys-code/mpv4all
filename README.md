@@ -25,6 +25,7 @@ Toggle functions is the main feature.
 - <kbd> Alt+RIGHT </kbd> - Video rotate RIGHT
 - <kbd> CTRL+d </kbd> - Activate bwdif deinterlace.
 - <kbd> b </kbd> - Activate blur edges.
+- <kbd> shift+c </kbd> - Auto crop function.
 
 ______________________________________________________
 
@@ -32,7 +33,6 @@ ______________________________________________________
 
 - <kbd> a </kbd> - Upmix audio from Stereo 2.0ch to Surround 7.1ch
 - <kbd> A </kbd> - Boost rear audio channels. Very good effect when you watch anime and movies.
-- <kbd> shift+c </kbd> - Auto crop function.
 
 ## Example of Boosted Upmix Surround 7.1ch
 
