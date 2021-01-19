@@ -6,17 +6,14 @@ This is my personal mpv configuration for the best quality experience.
 
 Toggle functions is the main feature.
 
+### This config is for NVIDIA users and Surround Audio enthusiasts.
+
 ## Software Requirements
 - mpv https://github.com/mpv-player/mpv | Download: https://www.videohelp.com/software/mpv-media-player
 - Windows (I haven't tested the Linux version of mpv.)
 
 ## System Requirements
 - At least a quad core CPU and a discrete GPU.  
-
-
-This config is for NVIDIA users and Surround Audio enthusiasts.
-
-
 
 Change `hwdec=nvdec` to `hwdec=auto` if you have an AMD or Intel GPU. Also, change `gpu-api=vulkan` to `gpu-api=auto` if your hardware don't support Vulkan.
 
