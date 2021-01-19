@@ -5,7 +5,9 @@ My personal mpv configuration for the best quality experience.
 Toggle functions is the main feature.
 
 
-### Keyboard Bindings:
+# Keyboard Bindings:
+
+### Video functions
 
 - <kbd> \ </kbd> - Activate frame interpolation. 
 - <kbd> CTRL+1 </kbd> - Activate FSRCNNX shader for upscaling Movie/Live Action/3D contents.
@@ -20,10 +22,16 @@ Toggle functions is the main feature.
 - <kbd> Alt+LEFT </kbd> -  Video rotate LEFT
 - <kbd> Alt+RIGHT </kbd> - Video rotate RIGHT
 - <kbd> CTRL+d </kbd> - Activate bwdif deinterlace.
+
+______________________________________________________
+
+### Audio functions (Only for Surround audio devices)
+
 - <kbd> a </kbd> - Upmix audio from Stereo 2.0ch to Surround 7.1ch
-- <kbd> A </kbd> - Boost rear audio channels. Very good effect in combination of upmix to 7.1ch
+- <kbd> A </kbd> - Boost rear audio channels. Very good effect when you watch anime and movies.
 - <kbd> shift+c </kbd> - Auto crop function.
 
+### *tested with Dolby Atmos audio driver for Windows 10. 
 
 For HDR videos, you have to rename your file like this: `The Hobbit - HDR.mkv` 
 The most important thing is the word HDR in the file name, otherwise don't work.
