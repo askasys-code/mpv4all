@@ -66,7 +66,7 @@ To verify if the shaders are working, press <kbd> i </kbd> then <kbd> 2 </kbd>.
 
 
 
-Tested with mpv v0.33.0, a GTX 1060 and an HDR10 60Hz monitor. 
+Tested with mpv v0.33.0, a GTX 1060 and a 4K HDR10 60Hz monitor. 
 
 
 All the scripts and shaders are the property of their rightful owners. I have only configured mpv.conf and input.conf.
