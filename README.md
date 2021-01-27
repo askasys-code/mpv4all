@@ -4,7 +4,7 @@ So many mpv configs but still not satisfied? Try this, and you won't regret it.
 
 This is my personal mpv configuration for the best quality experience.
 
-Toggle functions is the main feature.
+Toggle functions are the main feature.
 
 ### This config is for NVIDIA users and Surround Audio enthusiasts.
 
