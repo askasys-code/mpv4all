@@ -25,13 +25,17 @@ Also, change `gpu-api=vulkan` to `gpu-api=auto` if your hardware don't support V
 ### Video functions
 
 - <kbd> \ </kbd> - Activate frame interpolation.
-- <kbd> CTRL+1 </kbd> - Activate FSRCNNX shader for upscaling Movie/Live Action/3D contents.
-- <kbd> CTRL+2 </kbd> - Activate FSRCNNX shader for upscaling Anime contents.
-- <kbd> CTRL+3 </kbd> - Activate ACNet shader for Anime upscaling, lighter than FSRCNNX, more detailed lines but strong denoise.
-- <kbd> CTRL+4 </kbd> - Activate a function to thin the contour lines of the Anime, you can use this multiple times and in combination of other shaders.
+
+- <kbd> CTRL+1 </kbd> - Enhance video.
+- <kbd> CTRL+2 </kbd> - Enhance more! Very GPU intensive.
+
+- <kbd> CTRL+3 </kbd> - For anime only, use it if you don't like 1 or 2. 
+
+- <kbd> CTRL+8 </kbd> - Activate a function to thin the contour lines of the Anime, you can use this multiple times and in combination of other shaders.
 - <kbd> CTRL+9 </kbd> - Add Film Grain, you can also combine this with other shaders.
 - <kbd> CTRL+0 </kbd> - Deactivate all the shaders.
 - <kbd> CTRL+\ </kbd> - Display actual shaders.
+
 - <kbd> Alt+LEFT </kbd> -  Video rotate LEFT
 - <kbd> Alt+RIGHT </kbd> - Video rotate RIGHT
 - <kbd> CTRL+d </kbd> - Activate bwdif deinterlace.
