@@ -6,7 +6,7 @@ This is my personal mpv configuration for the best quality experience.
 
 Toggle functions are the main features.
 
-### This config is for NVIDIA users and Surround Audio enthusiasts.
+### This config is for NVIDIA users, 4K and 2K monitor resolution and Surround Audio enthusiasts.
 
 Change `hwdec=nvdec` to `hwdec=auto-copy` if you have an AMD or Intel GPU. 
 
