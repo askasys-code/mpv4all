@@ -26,8 +26,8 @@ Also, change `gpu-api=vulkan` to `gpu-api=auto` if your hardware don't support V
 
 - <kbd> \ </kbd> - Activate frame interpolation.
 - <kbd> CTRL+1 </kbd> - Enhance video.
-- <kbd> CTRL+2 </kbd> - Enhance more! Very GPU intensive. Not recommended for 1080p videos, in that case 1 is better for movies, 2 is better for anime.
-- <kbd> CTRL+3 </kbd> - For anime only, use it if you don't like 1 or 2. 
+- <kbd> CTRL+2 </kbd> - Enhance more! (Very GPU intensive)
+- <kbd> CTRL+3 </kbd> - Enhance Anime. 
 - <kbd> CTRL+8 </kbd> - Activate a function to thin the art lines of the Anime, you can use this multiple times and in combination of other shaders.
 - <kbd> CTRL+9 </kbd> - Add Film Grain, you can also combine this with other shaders.
 - <kbd> CTRL+0 </kbd> - Deactivate all the shaders.
