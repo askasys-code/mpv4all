@@ -74,7 +74,7 @@ No upscale
 
 <p align="center"><img width=100% src="https://i.imgur.com/IC53pnv.png" alt="Example of SSimSuperRes + FSRCNNX"></p>
 
-Tested with mpv v0.33.0, a GTX 1060 and a 4K HDR10 60Hz monitor. 
+Tested with mpv v0.33.0, a GTX 1060 and a 4K HDR 60Hz monitor. 
 
 Note: I prefer to not use Anime4K shader for a simple reason, it's too GPU intensive, and it's too artificial.
 FSRCNNX instead preserve the original image quality, in combination with SSimSuperRes.
