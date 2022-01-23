@@ -16,6 +16,7 @@ ______________________________________________________
 
 ### EXPERIMENTAL
 If you have a VRR display and you want to use FreeSync or G-Sync to 24fps movies, you have to deactivate the hardware decoding first and set <kbd>vf=fps=fps=48</kbd> or <kbd>vf=fps=fps=40</kbd> according to your monitor.
+
 By default my config is using DirectX 11 hardware decoding. To deactivate it just remove <kbd>gpu-api=d3d11<\kbd> and <kbd>hwdec=d3d11va<\kbd> from the config.
   
 Note: Do not press <kbd>h</kbd> to deactivate the hardware decoding, because there is bug and VRR could not recognize mpv.
