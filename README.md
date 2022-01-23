@@ -49,7 +49,7 @@ ______________________________________________________
 - <kbd> shift+c </kbd> - Auto crop function.
 - <kbd> shift+w </kbd> - Video Cutter function. # instructions here: https://github.com/ekisu/mpv-webm
 - <kbd> \ </kbd> - Frame interpolation
-- <kbd> h </kbd> - Switch between hardware and software decoders whenever possible.
+- <kbd> h </kbd> - Switch between hardware and software decoding whenever possible.
 ______________________________________________________
 
 ### Audio functions (Only for Surround audio devices/drivers)
