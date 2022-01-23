@@ -12,17 +12,6 @@ The default values of the confing are <kbd>gpu-api=d3d11</kbd> and <kbd>hwdec=d3
 Well, if you have an ancient video card, this config is not for you.
 I didn't put any default pre-scalers so that there are no issues with HDR videos.
 
-______________________________________________________
-
-### EXPERIMENTAL
-If you have a VRR display and you want to use FreeSync or G-Sync to 24fps movies, you have to deactivate the hardware decoding first and set <kbd>vf=fps=fps=48</kbd> or <kbd>vf=fps=fps=40</kbd> according to your monitor.
-
-By default my config is using DirectX 11 hardware decoding. To deactivate it just remove <kbd>gpu-api=d3d11</kbd> and <kbd>hwdec=d3d11va</kbd> from the config.
-
-Note: Do not press <kbd>h</kbd> to deactivate the hardware decoding, because there is bug and VRR could not recognize mpv.
-______________________________________________________
-
-
 ## Software Requirements
 - mpv https://github.com/mpv-player/mpv | Download: https://www.videohelp.com/software/mpv-media-player
 - Windows OS (I haven't tested the Linux version of mpv, my config could not work as intended.)
@@ -67,6 +56,17 @@ ______________________________________________________
 - Mouse <kbd> RIGHT_CLICK </kbd> - Move the image after the zoom.
 - <kbd>CTRL+LEFT</kbd> Previous file.
 - <kbd>CTRL+RIGHT</kbd> Next file.
+
+______________________________________________________
+
+### EXPERIMENTAL
+If you have a VRR display and you want to use FreeSync or G-Sync to 24fps movies, you have to deactivate the hardware decoding first and set <kbd>vf=fps=fps=48</kbd> or <kbd>vf=fps=fps=40</kbd> according to your monitor.
+
+By default my config is using DirectX 11 hardware decoding. To deactivate it just remove <kbd>gpu-api=d3d11</kbd> and <kbd>hwdec=d3d11va</kbd> from the config.
+
+Note: Do not press <kbd>h</kbd> to deactivate the hardware decoding, because there is bug and VRR could not recognize mpv.
+______________________________________________________
+
 
 ## Example of Boosted Upmix Surround 7.1ch
 
