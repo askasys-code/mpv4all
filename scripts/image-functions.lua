@@ -1,7 +1,7 @@
 local opts = {
-    drag_to_pan_margin = 50,
+    drag_to_pan_margin = 0,
     drag_to_pan_move_if_full_view=false,
-    cursor_centric_zoom_margin = 50,
+    cursor_centric_zoom_margin = 0,
     cursor_centric_zoom_auto_center = true,
     cursor_centric_zoom_dezoom_if_full_view = false,
 }
