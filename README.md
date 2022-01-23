@@ -17,7 +17,7 @@ I didn't put any default pre-scalers so that there are no issues with HDR videos
 - Windows OS (I haven't tested the Linux version of mpv, my config could not work as intended.)
 
 ## System Requirements
-- At least a quad core CPU and a discrete (GTX 750, RX 550 for example. I tried a GT 440, and it's not powerful enough for upscaling.)
+- At least a quad core CPU and a discrete GPU (GTX 750, RX 550 for example. I tried a GT 440, and it's not powerful enough for upscaling.)
 
 # Keyboard Bindings:
 
