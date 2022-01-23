@@ -24,7 +24,7 @@ I didn't put any default pre-scalers so that there are no issues with HDR videos
 ### Video functions
 
 - <kbd> 1 </kbd> - Upscale with SSimSuperRes
-- <kbd> 2 </kbd> - Upscale and Enhance with SSimSuperRes + FSRCNNX (Very GPU intensive)
+- <kbd> 2 </kbd> - Upscale and Enhance with SSimSuperRes + FSRCNNX
 - <kbd> 3 </kbd> - Upscale and Enchane with SSimSuperRes + ACNet (Use this only for Anime-style content)
 - <kbd> 8 </kbd> - Activate a function to thin the art lines of Anime-style content, you can use this in combination of other shaders.
 - <kbd> 9 </kbd> - Add Film Grain, you can also combine this with other shaders.
