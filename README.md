@@ -53,7 +53,8 @@ ______________________________________________________
 
 - <kbd> UP </kbd> <kbd> DOWN </kbd> - Pan & Scan function.
 - Mouse <kbd> WHEEL_UP </kbd> <kbd> WHEEL_DOWN </kbd> - Zoom-in and Zoom-out.
-- Mouse <kbd> RIGHT_CLICK </kbd> - Move the image after the zoom.
+- Mouse <kbd> LEFT_CLICK </kbd> - Move the image after the zoom.
+- Mouse <kbd> RIGHT_CLICK </kbd> - Pause.
 - <kbd>CTRL+LEFT</kbd> Previous file.
 - <kbd>CTRL+RIGHT</kbd> Next file.
 
