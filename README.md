@@ -76,7 +76,7 @@ No upscale
 
 Tested with mpv v0.33.0, a GTX 1060 and a 4K HDR 60Hz monitor. 
 
-Note: I prefer to not use Anime4K shader for a simple reason, it's too GPU intensive, and it's too artificial.
+Note: I prefer not to use Anime4K shader for a simple reason, it's too GPU intensive and too artificial.
 FSRCNNX instead preserve the original image quality, in combination with SSimSuperRes.
 
-All the scripts and shaders are the property of their rightful owners. I have only configured mpv.conf and input.conf.
+All the scripts and shaders are property of their rightful owners. I have only configured mpv.conf and input.conf.
