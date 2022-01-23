@@ -37,6 +37,7 @@ I didn't put any default pre-scalers so that there are no issues with HDR videos
 - <kbd> CTRL+c </kbd> - Switch between Full RGB and Limited RGB color space.
 - <kbd> shift+c </kbd> - Auto crop function.
 - <kbd> shift+w </kbd> - Video Cutter function. # instructions here: https://github.com/ekisu/mpv-webm
+- <kbd> \ </kbd> - Interpolation
 ______________________________________________________
 
 ### Audio functions (Only for Surround audio devices/drivers)
