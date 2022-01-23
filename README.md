@@ -39,6 +39,7 @@ I didn't put any default pre-scalers so that there are no issues with HDR videos
 - <kbd> shift+w </kbd> - Video Cutter function. # instructions here: https://github.com/ekisu/mpv-webm
 - <kbd> UP </kbd> <kbd> DOWN </kbd> - Pan & Scan function.
 - Mouse <kbd> WHEEL_UP </kbd> <kbd> WHEEL_DOWN </kbd> - Zoom-in and Zoom-out.
+- Mouse <kbd> RIGHT_CLICK </kbd> - Move the image after the zoom.
 ______________________________________________________
 
 ### Audio functions (Only for Surround audio devices/drivers)
