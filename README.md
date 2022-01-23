@@ -84,7 +84,7 @@ To verify if the shaders are working, press <kbd> i </kbd> then <kbd> 2 </kbd>.
 
 1080p to 4K upscale, final result
 
-<p align="center"><img width=100% src="https://i.imgur.com/voWKgW3.png" alt="Example of SSimSuperRes + FSRCNNX"></p>
+<p align="center"><img width=100% src="https://i.imgur.com/ptCcaV6.png" alt="Example of SSimSuperRes + FSRCNNX"></p>
 
 No upscale
 
