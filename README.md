@@ -4,7 +4,7 @@ So many mpv configs but still not satisfied? Try this, and you won't regret it.
 
 This is my personal mpv configuration for the best quality experience.
 
-You can use this configuration to have a universal video and image player with many convenient functions.
+You can use this configuration to have a universal video, image and audio player with many convenient functions.
 The main functions are the toggle keys for upscaling.
 I have also included a script for saving small video clips and a script for displaying images correctly.
 
