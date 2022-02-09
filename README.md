@@ -26,37 +26,38 @@ I didn't put any default pre-scalers so that there are no issues with HDR videos
 - <kbd> 1 </kbd> - Upscale with SSimSuperRes
 - <kbd> 2 </kbd> - Upscale and Enhance with SSimSuperRes + FSRCNNX
 - <kbd> 3 </kbd> - Upscale and Enchane with SSimSuperRes + ACNet (Use this only for Anime-style content)
-- <kbd> 8 </kbd> - A function to thin the black lines of Anime-style content, you can use this in combination of other shaders.
-- <kbd> 9 </kbd> - Add Film Grain, you can also combine this with other shaders.
-- <kbd> 0 </kbd> - Disable everything and return to the default values.
-- <kbd> CTRL+\ </kbd> - Display actual shaders.
-- <kbd> r </kbd> - Rotate video.
-- <kbd> CTRL+d </kbd> - Activate bwdif deinterlace.
-- <kbd> d </kbd> - Activate yadif deinterlace.
-- <kbd> b </kbd> - Activate blur edges.
-- <kbd> CTRL+c </kbd> - Switch between Full RGB and Limited RGB color space.
-- <kbd> shift+c </kbd> - Auto crop function.
-- <kbd> shift+w </kbd> - Video Cutter function. # instructions here: https://github.com/ekisu/mpv-webm
+- <kbd> 7 </kbd> - A function to thin the black lines of Anime-style content, you can use this in combination of other shaders
+- <kbd> 8 </kbd> - Add Film Grain #Type 1
+- <kbd> 9 </kbd> - Add Film Grain #Type 2
+- <kbd> 0 </kbd> - Disable everything and return to the default values
+- <kbd> CTRL+\ </kbd> - Display actual shaders
+- <kbd> r </kbd> - Rotate video
+- <kbd> CTRL+d </kbd> - Activate bwdif deinterlace
+- <kbd> d </kbd> - Activate yadif deinterlace
+- <kbd> b </kbd> - Activate blur edges
+- <kbd> CTRL+c </kbd> - Switch between Full RGB and Limited RGB color space
+- <kbd> shift+c </kbd> - Auto crop function
+- <kbd> shift+w </kbd> - Video Cutter function # instructions here: https://github.com/ekisu/mpv-webm
 - <kbd> \ </kbd> - Frame interpolation
-- <kbd> h </kbd> - Switch between hardware and software decoding whenever possible.
+- <kbd> h </kbd> - Switch between hardware and software decoding whenever possible
 ______________________________________________________
 
 ### Audio functions (Only for Surround audio devices/drivers)
 
 - <kbd> a </kbd> - Upmix audio from Stereo 2.0ch to Surround 7.1ch
 - <kbd> Alt+a </kbd> - Downmix audio from Surround to Stereo 2.0ch
-- <kbd> A </kbd> - Boost rear audio channels. Very good effect when you watch anime and movies.
-- <kbd> CTRL+a </kbd> - Listen only rear channels, just for fun. This works even for native 5.1 and 7.1 audio tracks.
+- <kbd> A </kbd> - Boost rear audio channels. Very good effect when you watch anime and movies
+- <kbd> CTRL+a </kbd> - Listen only rear channels, just for fun. This works even for native 5.1 and 7.1 audio tracks
 ______________________________________________________
 
 ### Other controls
 
-- <kbd> UP </kbd> <kbd> DOWN </kbd> - Pan & Scan function.
-- Mouse <kbd> WHEEL_UP </kbd> <kbd> WHEEL_DOWN </kbd> - Zoom-in and Zoom-out.
-- Mouse <kbd> LEFT_CLICK </kbd> - Click and hold to move the image after the zoom.
-- Mouse <kbd> RIGHT_CLICK </kbd> - Pause.
-- <kbd>CTRL+LEFT</kbd> Previous file.
-- <kbd>CTRL+RIGHT</kbd> Next file.
+- <kbd> UP </kbd> <kbd> DOWN </kbd> - Pan & Scan function
+- Mouse <kbd> WHEEL_UP </kbd> <kbd> WHEEL_DOWN </kbd> - Zoom-in and Zoom-out
+- Mouse <kbd> LEFT_CLICK </kbd> - Click and hold to move the image after the zoom
+- Mouse <kbd> RIGHT_CLICK </kbd> - Pause
+- <kbd>CTRL+LEFT</kbd> Previous file
+- <kbd>CTRL+RIGHT</kbd> Next file
 
 ______________________________________________________
 
