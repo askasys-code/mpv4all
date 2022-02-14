@@ -20,6 +20,8 @@ I didn't put any default pre-scalers so that there are no issues with HDR videos
 - Minimum: At least a quad core CPU and a discrete GPU (GTX 750, RX 550 for example. I tried a GT 440, and it's not powerful enough for upscaling.)
 - Recommanded: GTX 1060 or RX 580 equivalent for 4K upscaling.
 
+<p align="left"><img width=30% src="https://i.imgur.com/Lq26vjI.png" alt=""></p>
+
 # Keyboard Bindings:
 
 ### Video functions
