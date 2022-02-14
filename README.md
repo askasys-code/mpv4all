@@ -1,4 +1,4 @@
-# mpv4all v2.0 【2022 Edition】
+# mpv4all v3.0 【2022 Edition】
 
 So many mpv configs but still not satisfied? Try this, and you won't regret it.
 
@@ -7,6 +7,7 @@ This is my personal mpv configuration for the best quality experience.
 You can use this configuration to have a universal video, image and audio player with many convenient functions.
 The main functions are the toggle keys for upscaling.
 I have also included a script for saving small video clips and a script for displaying images correctly.
+To upscale images, please use <kbd> 1 </kbd> function only. 
 
 The default values of the config are <kbd>gpu-api=d3d11</kbd> and <kbd>hwdec=d3d11va</kbd> to have the best compatibility and a good performance.
 Well, if you have an ancient video card, this config is not for you.
@@ -17,16 +18,18 @@ I didn't put any default pre-scalers so that there are no issues with HDR videos
 - Windows OS (I haven't tested the Linux version of mpv, my config could not work as intended.)
 
 ## System Requirements
-- At least a quad core CPU and a discrete GPU (GTX 750, RX 550 for example. I tried a GT 440, and it's not powerful enough for upscaling.)
+- Minimum: At least a quad core CPU and a discrete GPU (GTX 750, RX 550 for example. I tried a GT 440, and it's not powerful enough for upscaling.)
+- Recommanded: GTX 1060 or RX 580 equivalent for 4K upscaling.
 
 # Keyboard Bindings:
 
 ### Video functions
 
-- <kbd> 1 </kbd> - Upscale with SSimSuperRes
-- <kbd> 2 </kbd> - Upscale and Enhance with SSimSuperRes + FSRCNNX
-- <kbd> 3 </kbd> - Upscale and Enchane with SSimSuperRes + ACNet (Use this only for Anime-style content)
-- <kbd> 7 </kbd> - A function to thin the black lines of Anime-style content, you can use this in combination of other shaders
+- <kbd> 1 </kbd> - Upscale with SSimSuperRes (Enhance mpv internal upscaler)
+- <kbd> 2 </kbd> - Upscale with NVIDIA Image Scaling (NIS)
+- <kbd> 3 </kbd> - Upscale with AMD FidelityFX™ Super Resolution (FSR)
+- <kbd> 4 </kbd> - Upscale with AMD FidelityFX™ Contrast Adaptive Sharpening (CAS) 
+- <kbd> 7 </kbd> - Add Static Film Grain
 - <kbd> 8 </kbd> - Add Film Grain #Type 1
 - <kbd> 9 </kbd> - Add Film Grain #Type 2
 - <kbd> 0 </kbd> - Disable everything and return to the default values
