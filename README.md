@@ -8,9 +8,7 @@ You can use this configuration to have a universal video, image and audio player
 The main functions are the toggle keys for upscaling.
 I have also included a script for saving small video clips and a script for displaying images correctly.
 
-The default values of the config are <kbd>gpu-api=d3d11</kbd> and <kbd>hwdec=d3d11va</kbd> to have the best compatibility and a good performance.
-Well, if you have an ancient video card, this config is not for you.
-I didn't put any default pre-scalers so that there are no issues with HDR videos.
+The default values of the config are <kbd>gpu-api=auto</kbd> and <kbd>hwdec=auto</kbd> to have the best compatibility and a best performance according to your hardware.
 
 ## Software Requirements
 - mpv https://github.com/mpv-player/mpv | Download: https://www.videohelp.com/software/mpv-media-player
