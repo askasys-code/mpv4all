@@ -148,7 +148,7 @@ vec4 hook() {
 //!WHEN NATIVE_CROPPED.h OUTPUT.h <
 //!DESC SSSR final pass
 
-#define oversharp   0.0
+#define oversharp   0.4
 
 // -- Window Size --
 #define taps        3.0
@@ -175,7 +175,7 @@ vec4 hook() {
     vec2 mVar = vec2(0.0);
     for (int X=-1; X<=1; X++)
     for (int Y=-1; Y<=1; Y++) {
-        vec2 w = clamp(1.5 - abs(vec2(X,Y) - offset), 0., 1.);
+        vec2 w = clamp(1.5 - abs(vec2(X,Y)), 0.0, 1.0);
         mVar += w.r * w.g * vec2(GetH(X,Y).a, 1.0);
     }
     mVar.r /= mVar.g;
