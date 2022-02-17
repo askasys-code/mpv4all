@@ -25,7 +25,7 @@ The default values of the config are <kbd>gpu-api=auto</kbd> and <kbd>hwdec=auto
 ### Video functions
 
 - <kbd> 1 </kbd> - Upscale with SSimSuperRes (Enhance mpv internal upscaler)
-- <kbd> 2 </kbd> - Upscale with SSimSuperRes + FSRCNNX (Upscale with Super-Resolution Convolutional Neural Network)
+- <kbd> 2 </kbd> - Upscale with SSimSuperRes + FSRCNNX (Super-Resolution Convolutional Neural Network X)
 - <kbd> 3 </kbd> - Upscale with NVIDIA Image Scaling (NIS)
 - <kbd> 4 </kbd> - Upscale with AMD FidelityFX™ Super Resolution (FSR)
 - <kbd> 5 </kbd> - Upscale with AMD FidelityFX™ Contrast Adaptive Sharpening (CAS) 
