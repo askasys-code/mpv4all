@@ -1,4 +1,4 @@
-# mpv4all v3.0 【2022 Edition】
+# mpv4all v3.1 【2022 Edition】
 
 So many mpv configs but still not satisfied? Try this, and you won't regret it.
 
@@ -27,7 +27,7 @@ I didn't put any default pre-scalers so that there are no issues with HDR videos
 ### Video functions
 
 - <kbd> 1 </kbd> - Upscale with SSimSuperRes (Enhance mpv internal upscaler)
-- <kbd> 2 </kbd> - Upscale with SSimSuperRes + FSRCNNX
+- <kbd> 2 </kbd> - Upscale with SSimSuperRes + FSRCNNX (Upscale with Super-Resolution Convolutional Neural Network)
 - <kbd> 3 </kbd> - Upscale with NVIDIA Image Scaling (NIS)
 - <kbd> 4 </kbd> - Upscale with AMD FidelityFX™ Super Resolution (FSR)
 - <kbd> 5 </kbd> - Upscale with AMD FidelityFX™ Contrast Adaptive Sharpening (CAS) 
@@ -40,6 +40,7 @@ I didn't put any default pre-scalers so that there are no issues with HDR videos
 - <kbd> r </kbd> - Rotate video
 - <kbd> CTRL+d </kbd> - Activate bwdif deinterlace
 - <kbd> d </kbd> - Activate yadif deinterlace
+- <kbd> D </kbd> - Activate deband
 - <kbd> b </kbd> - Activate blur edges
 - <kbd> CTRL+c </kbd> - Switch between Full RGB and Limited RGB color space
 - <kbd> shift+c </kbd> - Auto crop function
