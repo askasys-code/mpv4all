@@ -1,6 +1,6 @@
 // The MIT License(MIT)
 //
-// Copyright(c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// Copyright(c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files(the "Software"), to deal in
@@ -19,16 +19,21 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// NVIDIA Image Scaling v1.0.1 by NVIDIA
+// NVIDIA Image Scaling v1.0.2 by NVIDIA
 // ported to mpv by agyild
 
-//!HOOK MAIN
+// Changelog
+// Made it directly operate on LUMA plane, since the original shader was operating
+// on LUMA by deriving it from RGB. This should cause a major increase in performance,
+// especially on OpenGL 4.0+ renderers
+
+//!HOOK LUMA
 //!BIND HOOKED
 //!BIND coef_scaler
 //!BIND coef_usm
-//!DESC NVIDIA Image Scaling and Sharpening
+//!DESC NVIDIA Image Scaling and Sharpening v1.0.2
 //!COMPUTE 32 24 256 1
-//!WHEN OUTPUT.w OUTPUT.h * MAIN.w MAIN.h * / 1.0 >
+//!WHEN OUTPUT.w OUTPUT.h * LUMA.w LUMA.h * / 1.0 >
 //!WIDTH OUTPUT.w
 //!HEIGHT OUTPUT.h
 
@@ -51,17 +56,18 @@
 #define kEdgeMapPitch (NIS_BLOCK_WIDTH + 2)
 #define kEdgeMapSize (kEdgeMapPitch * (NIS_BLOCK_HEIGHT + 2))
 const float sharpen_slider = clamp(SHARPNESS, 0.0f, 1.0f) - 0.5f;
+const float MaxScale = (sharpen_slider >= 0.0f) ? 1.25f : 1.75f;
 const float MinScale = (sharpen_slider >= 0.0f) ? 1.25f : 1.0f;
 const float LimitScale = (sharpen_slider >= 0.0f) ? 1.25f : 1.0f;
-const float kDetectRatio = 1127.0f / 1024.0f;
+const float kDetectRatio = 2 * 1127.f / 1024.f;
 const float kDetectThres = (bool(NIS_HDR_MODE) ? 32.0f : 64.0f) / 1024.0f;
 const float kMinContrastRatio = bool(NIS_HDR_MODE) ? 1.5f : 2.0f;
 const float kMaxContrastRatio = bool(NIS_HDR_MODE) ? 5.0f : 10.0f;
 const float kSharpStartY = bool(NIS_HDR_MODE) ? 0.35f : 0.45f;
 const float kSharpEndY = bool(NIS_HDR_MODE) ? 0.55f : 0.9f;
 const float kSharpStrengthMin = max(0.0f, 0.4f + sharpen_slider * MinScale * (bool(NIS_HDR_MODE) ? 1.1f : 1.2));
-const float kSharpStrengthMax = ((bool(NIS_HDR_MODE) ? 2.2f : 1.6f) + sharpen_slider * 1.8f);
-const float kSharpLimitMin = max((bool(NIS_HDR_MODE) ? 0.06f :0.1f), (bool(NIS_HDR_MODE) ? 0.1f : 0.14f) + sharpen_slider * LimitScale * (bool(NIS_HDR_MODE) ? 0.28f : 0.32f)); //
+const float kSharpStrengthMax = ((bool(NIS_HDR_MODE) ? 2.2f : 1.6f) + sharpen_slider * MaxScale * 1.8f);
+const float kSharpLimitMin = max((bool(NIS_HDR_MODE) ? 0.06f :0.1f), (bool(NIS_HDR_MODE) ? 0.1f : 0.14f) + sharpen_slider * LimitScale * (bool(NIS_HDR_MODE) ? 0.28f : 0.32f));
 const float kSharpLimitMax = ((bool(NIS_HDR_MODE) ? 0.6f : 0.5f) + sharpen_slider * LimitScale * 0.6f);
 const float kRatioNorm = 1.0f / (kMaxContrastRatio - kMinContrastRatio);
 const float kSharpScaleY = 1.0f / (kSharpEndY - kSharpStartY);
@@ -87,13 +93,6 @@ shared float shCoefUSM[kPhaseCount][kFilterSize];
 shared vec4 shEdgeMap[kEdgeMapSize];
 
 // Shader code
-float getY(vec3 rgba) {
-#if (NIS_HDR_MODE == 1)
-	return float(0.262f) * rgba.x + float(0.678f) * rgba.y + float(0.0593f) * rgba.z;
-#else
-	return float(0.2126f) * rgba.x + float(0.7152f) * rgba.y + float(0.0722f) * rgba.z;
-#endif
-}
 
 vec4 GetEdgeMap(float p[4][4], int i, int j) {
 	const float g_0 = abs(p[0 + i][0 + j] + p[0 + i][1 + j] + p[0 + i][2 + j] - p[2 + i][0 + j] - p[2 + i][1 + j] - p[2 + i][2 + j]);
@@ -109,41 +108,26 @@ vec4 GetEdgeMap(float p[4][4], int i, int j) {
 	float e_0_90 = 0;
 	float e_45_135 = 0;
 
-	if ((g_0_90_max + g_45_135_max) != 0)
-	{
-		e_0_90 = g_0_90_max / (g_0_90_max + g_45_135_max);
-		e_0_90 = min(e_0_90, 1.0f);
-		e_45_135 = 1.0f - e_0_90;
-	}
+    if (g_0_90_max + g_45_135_max == 0)
+    {
+        return vec4(0, 0, 0, 0);
+    }
 
-	float e = ((g_0_90_max > (g_0_90_min * kDetectRatio)) && (g_0_90_max > kDetectThres) && (g_0_90_max > g_45_135_min)) ? 1.f : 0.f;
-	float edge_0  = (g_0_90_max == g_0) ? e   : 0.f;
-	float edge_90 = (g_0_90_max == g_0) ? 0.f : e;
+    e_0_90 = min(g_0_90_max / (g_0_90_max + g_45_135_max), 1.0f);
+    e_45_135 = 1.0f - e_0_90;
 
-	e = ((g_45_135_max > (g_45_135_min * kDetectRatio)) && (g_45_135_max > kDetectThres) && (g_45_135_max > g_0_90_min)) ? 1.f : 0.f;
-	float edge_45  = (g_45_135_max == g_45) ? e   : 0.f;
-	float edge_135 = (g_45_135_max == g_45) ? 0.f : e;
+    bool c_0_90 = (g_0_90_max > (g_0_90_min * kDetectRatio)) && (g_0_90_max > kDetectThres) && (g_0_90_max > g_45_135_min);
+    bool c_45_135 = (g_45_135_max > (g_45_135_min * kDetectRatio)) && (g_45_135_max > kDetectThres) && (g_45_135_max > g_0_90_min);
+    bool c_g_0_90 = g_0_90_max == g_0;
+    bool c_g_45_135 = g_45_135_max == g_45;
 
-	float weight_0 = 0.f;
-	float weight_90 = 0.f;
-	float weight_45 = 0.f;
-	float weight_135 = 0.f;
-	if ((edge_0 + edge_90 + edge_45 + edge_135) >= 2.0f)
-	{
-		weight_0  = (edge_0 == 1.0f) ? e_0_90 : 0.f;
-		weight_90 = (edge_0 == 1.0f) ? 0.f    : e_0_90;
+    float f_e_0_90 = (c_0_90 && c_45_135) ? e_0_90 : 1.0f;
+    float f_e_45_135 = (c_0_90 && c_45_135) ? e_45_135 : 1.0f;
 
-		weight_45 =  (edge_45 == 1.0f) ? e_45_135 : 0.f;
-		weight_135 = (edge_45 == 1.0f) ? 0.f      : e_45_135;
-	}
-	else if ((edge_0 + edge_90 + edge_45 + edge_135) >= 1.0f)
-	{
-		weight_0 = edge_0;
-		weight_90 = edge_90;
-		weight_45 = edge_45;
-		weight_135 = edge_135;
-	}
-
+    float weight_0 = (c_0_90 && c_g_0_90) ? f_e_0_90 : 0.0f;
+    float weight_90 = (c_0_90 && !c_g_0_90) ? f_e_0_90 : 0.0f;
+    float weight_45 = (c_45_135 && c_g_45_135) ? f_e_45_135 : 0.0f;
+    float weight_135 = (c_45_135 && !c_g_45_135) ? f_e_45_135 : 0.0f;
 
 	return vec4(weight_0, weight_90, weight_45, weight_135);
 }
@@ -153,7 +137,7 @@ void LoadFilterBanksSh(int i0, int di) {
 	// The work is spread over (kPhaseCount * 2) threads
 	for (int i = i0; i < kPhaseCount * 2; i += di)
 	{
-		int phase = i / 2;
+		int phase = i >> 1;
 		int vIdx = i & 1;
 
 		// vec4 v = vec4(NVTEX_LOAD(coef_scaler, ivec2(vIdx, phase)));
@@ -255,114 +239,119 @@ float FilterNormal(const float p[6][6], int phase_x_frac_int, int phase_y_frac_i
 	return h_acc;
 }
 
-vec4 GetDirFilters(float p[6][6], float phase_x_frac, float phase_y_frac, int phase_x_frac_int, int phase_y_frac_int)
+float AddDirFilters(float p[6][6], float phase_x_frac, float phase_y_frac, int phase_x_frac_int, int phase_y_frac_int, vec4 w)
 {
-	vec4 f;
-	// 0 deg filter
-	float interp0Deg[6];
-	{
-		for (int i = 0; i < 6; ++i)
+	float f = 0.f;
+    if (w.x > 0.0f)
+    {
+		// 0 deg filter
+		float interp0Deg[6];
 		{
-			interp0Deg[i] = lerp(p[i][2], p[i][3], phase_x_frac);
+			for (int i = 0; i < 6; ++i)
+			{
+				interp0Deg[i] = lerp(p[i][2], p[i][3], phase_x_frac);
+			}
 		}
-	}
+        f += EvalPoly6(interp0Deg, phase_y_frac_int) * w.x;
+    }
 
-	f.x = EvalPoly6(interp0Deg, phase_y_frac_int);
-
-	// 90 deg filter
-	float interp90Deg[6];
-	{
-		for (int i = 0; i < 6; ++i)
+    if (w.y > 0.0f)
+    {
+		// 90 deg filter
+		float interp90Deg[6];
 		{
-			interp90Deg[i] = lerp(p[2][i], p[3][i], phase_y_frac);
+			for (int i = 0; i < 6; ++i)
+			{
+				interp90Deg[i] = lerp(p[2][i], p[3][i], phase_y_frac);
+			}
 		}
-	}
+		f += EvalPoly6(interp90Deg, phase_x_frac_int) * w.y;
+    }
+    if (w.z > 0.0f)
+    {
+		//45 deg filter
+		float pphase_b45;
+		pphase_b45 = 0.5f + 0.5f * (phase_x_frac - phase_y_frac);
 
-	f.y = EvalPoly6(interp90Deg, phase_x_frac_int);
-
-	//45 deg filter
-	float pphase_b45;
-	pphase_b45 = 0.5f + 0.5f * (phase_x_frac - phase_y_frac);
-
-	float temp_interp45Deg[7];
-	temp_interp45Deg[1] = lerp(p[2][1], p[1][2], pphase_b45);
-	temp_interp45Deg[3] = lerp(p[3][2], p[2][3], pphase_b45);
-	temp_interp45Deg[5] = lerp(p[4][3], p[3][4], pphase_b45);
-	{
-		pphase_b45 = pphase_b45 - 0.5f;
-		float a = (pphase_b45 >= 0.f) ? p[0][2] : p[2][0];
-		float b = (pphase_b45 >= 0.f) ? p[1][3] : p[3][1];
-		float c = (pphase_b45 >= 0.f) ? p[2][4] : p[4][2];
-		float d = (pphase_b45 >= 0.f) ? p[3][5] : p[5][3];
-		temp_interp45Deg[0] = lerp(p[1][1], a, abs(pphase_b45));
-		temp_interp45Deg[2] = lerp(p[2][2], b, abs(pphase_b45));
-		temp_interp45Deg[4] = lerp(p[3][3], c, abs(pphase_b45));
-		temp_interp45Deg[6] = lerp(p[4][4], d, abs(pphase_b45));
-	}
-
-
-	float interp45Deg[6];
-	float pphase_p45 = phase_x_frac + phase_y_frac;
-	if (pphase_p45 >= 1)
-	{
-		for (int i = 0; i < 6; i++)
+		float temp_interp45Deg[7];
+		temp_interp45Deg[1] = lerp(p[2][1], p[1][2], pphase_b45);
+		temp_interp45Deg[3] = lerp(p[3][2], p[2][3], pphase_b45);
+		temp_interp45Deg[5] = lerp(p[4][3], p[3][4], pphase_b45);
 		{
-			interp45Deg[i] = temp_interp45Deg[i + 1];
+			pphase_b45 = pphase_b45 - 0.5f;
+			float a = (pphase_b45 >= 0.f) ? p[0][2] : p[2][0];
+			float b = (pphase_b45 >= 0.f) ? p[1][3] : p[3][1];
+			float c = (pphase_b45 >= 0.f) ? p[2][4] : p[4][2];
+			float d = (pphase_b45 >= 0.f) ? p[3][5] : p[5][3];
+			temp_interp45Deg[0] = lerp(p[1][1], a, abs(pphase_b45));
+			temp_interp45Deg[2] = lerp(p[2][2], b, abs(pphase_b45));
+			temp_interp45Deg[4] = lerp(p[3][3], c, abs(pphase_b45));
+			temp_interp45Deg[6] = lerp(p[4][4], d, abs(pphase_b45));
 		}
-		pphase_p45 = pphase_p45 - 1;
-	}
-	else
-	{
-		for (int i = 0; i < 6; i++)
+
+		float interp45Deg[6];
+		float pphase_p45 = phase_x_frac + phase_y_frac;
+		if (pphase_p45 >= 1)
 		{
-			interp45Deg[i] = temp_interp45Deg[i];
+			for (int i = 0; i < 6; i++)
+			{
+				interp45Deg[i] = temp_interp45Deg[i + 1];
+			}
+			pphase_p45 = pphase_p45 - 1;
 		}
-	}
-
-	f.z = EvalPoly6(interp45Deg, int(pphase_p45 * 64));
-
-	//135 deg filter
-	float pphase_b135;
-	pphase_b135 = 0.5f * (phase_x_frac + phase_y_frac);
-
-	float temp_interp135Deg[7];
-
-	temp_interp135Deg[1] = lerp(p[3][1], p[4][2], pphase_b135);
-	temp_interp135Deg[3] = lerp(p[2][2], p[3][3], pphase_b135);
-	temp_interp135Deg[5] = lerp(p[1][3], p[2][4], pphase_b135);
-
-	{
-		pphase_b135 = pphase_b135 - 0.5f;
-		float a = (pphase_b135 >= 0.f) ? p[5][2] : p[3][0];
-		float b = (pphase_b135 >= 0.f) ? p[4][3] : p[2][1];
-		float c = (pphase_b135 >= 0.f) ? p[3][4] : p[1][2];
-		float d = (pphase_b135 >= 0.f) ? p[2][5] : p[0][3];
-		temp_interp135Deg[0] = lerp(p[4][1], a, abs(pphase_b135));
-		temp_interp135Deg[2] = lerp(p[3][2], b, abs(pphase_b135));
-		temp_interp135Deg[4] = lerp(p[2][3], c, abs(pphase_b135));
-		temp_interp135Deg[6] = lerp(p[1][4], d, abs(pphase_b135));
-	}
-
-
-	float interp135Deg[6];
-	float pphase_p135 = 1 + (phase_x_frac - phase_y_frac);
-	if (pphase_p135 >= 1)
-	{
-		for (int i = 0; i < 6; ++i)
+		else
 		{
-			interp135Deg[i] = temp_interp135Deg[i + 1];
+			for (int i = 0; i < 6; i++)
+			{
+				interp45Deg[i] = temp_interp45Deg[i];
+			}
 		}
-		pphase_p135 = pphase_p135 - 1;
-	}
-	else
-	{
-		for (int i = 0; i < 6; ++i)
-		{
-			interp135Deg[i] = temp_interp135Deg[i];
-		}
-	}
+		f += EvalPoly6(interp45Deg, int(pphase_p45 * 64)) * w.z;
+    }
+    
+	if (w.w > 0.0f)
+    {
+		//135 deg filter
+		float pphase_b135 = 0.5f * (phase_x_frac + phase_y_frac);
 
-	f.w = EvalPoly6(interp135Deg, int(pphase_p135 * 64));
+		float temp_interp135Deg[7];
+
+		temp_interp135Deg[1] = lerp(p[3][1], p[4][2], pphase_b135);
+		temp_interp135Deg[3] = lerp(p[2][2], p[3][3], pphase_b135);
+		temp_interp135Deg[5] = lerp(p[1][3], p[2][4], pphase_b135);
+
+		{
+			pphase_b135 = pphase_b135 - 0.5f;
+			float a = (pphase_b135 >= 0.f) ? p[5][2] : p[3][0];
+			float b = (pphase_b135 >= 0.f) ? p[4][3] : p[2][1];
+			float c = (pphase_b135 >= 0.f) ? p[3][4] : p[1][2];
+			float d = (pphase_b135 >= 0.f) ? p[2][5] : p[0][3];
+			temp_interp135Deg[0] = lerp(p[4][1], a, abs(pphase_b135));
+			temp_interp135Deg[2] = lerp(p[3][2], b, abs(pphase_b135));
+			temp_interp135Deg[4] = lerp(p[2][3], c, abs(pphase_b135));
+			temp_interp135Deg[6] = lerp(p[1][4], d, abs(pphase_b135));
+		}
+
+
+		float interp135Deg[6];
+		float pphase_p135 = 1 + (phase_x_frac - phase_y_frac);
+		if (pphase_p135 >= 1)
+		{
+			for (int i = 0; i < 6; ++i)
+			{
+				interp135Deg[i] = temp_interp135Deg[i + 1];
+			}
+			pphase_p135 = pphase_p135 - 1;
+		}
+		else
+		{
+			for (int i = 0; i < 6; ++i)
+			{
+				interp135Deg[i] = temp_interp135Deg[i];
+			}
+		}
+		f += EvalPoly6(interp135Deg, int(pphase_p135 * 64)) * w.w;
+	}
 	return f;
 }
 
@@ -397,10 +386,10 @@ void hook()
 	// we use texture gather to get extra support necessary
 	// to compute 2x2 edge map outputs too
 	{
-		for (int i = int(threadIdx) * 2; i < numTilePixels / 2; i += NIS_THREAD_GROUP_SIZE * 2)
+		for (uint i = threadIdx * 2; i < uint(numTilePixels) >> 1; i += NIS_THREAD_GROUP_SIZE * 2)
 		{
-			int py = (i / numTilePixelsX) * 2;
-			int px = i % numTilePixelsX;
+			uint py = (i / numTilePixelsX) * 2;
+			uint px = i % numTilePixelsX;
 
 			// 0.5 to be in the center of texel
 			// - (kSupportSize - 1) / 2 to shift by the kernel support size
@@ -412,26 +401,24 @@ void hook()
 			float p[2][2];
 #ifdef HOOKED_gather
 			{
-				const vec4 sr = HOOKED_gather(vec2(tx, ty), 0);
-				const vec4 sg = HOOKED_gather(vec2(tx, ty), 1);
-				const vec4 sb = HOOKED_gather(vec2(tx, ty), 2);
+				const vec4 sY = HOOKED_gather(vec2(tx, ty), 0);
 
-				p[0][0] = getY(vec3(sr.w, sg.w, sb.w));
-				p[0][1] = getY(vec3(sr.z, sg.z, sb.z));
-				p[1][0] = getY(vec3(sr.x, sg.x, sb.x));
-				p[1][1] = getY(vec3(sr.y, sg.y, sb.y));
+				p[0][0] = sY.w;
+				p[0][1] = sY.z;
+				p[1][0] = sY.x;
+				p[1][1] = sY.y;
 			}
 #else
 			for (int j = 0; j < 2; j++)
 			{
 				for (int k = 0; k < 2; k++)
 				{
-					const vec4 px = HOOKED_tex(vec2(tx + k * kSrcNormX, ty + j * kSrcNormY));
-					p[j][k] = getY(px.xyz);
+					const float px = HOOKED_tex(vec2(tx + k * kSrcNormX, ty + j * kSrcNormY)).r;
+					p[j][k] = px;
 				}
 			}
 #endif
-			const int idx = py * kTilePitch + px;
+			const uint idx = py * kTilePitch + px;
 			shPixelsY[idx] = float(p[0][0]);
 			shPixelsY[idx + 1] = float(p[0][1]);
 			shPixelsY[idx + kTilePitch] = float(p[1][0]);
@@ -444,14 +431,14 @@ void hook()
 
 	{
 		// fill in the edge map of 2x2 pixels
-		for (int i = int(threadIdx) * 2; i < numEdgeMapPixels / 2; i += NIS_THREAD_GROUP_SIZE * 2)
+		for (uint i = threadIdx * 2; i < uint(numEdgeMapPixels) >> 1; i += NIS_THREAD_GROUP_SIZE * 2)
 		{
-			int py = (i / numEdgeMapPixelsX) * 2;
-			int px = i % numEdgeMapPixelsX;
+			uint py = (i / numEdgeMapPixelsX) * 2;
+			uint px = i % numEdgeMapPixelsX;
 
-			const int edgeMapIdx = py * kEdgeMapPitch + px;
+			const uint edgeMapIdx = py * kEdgeMapPitch + px;
 
-			int tileCornerIdx = (py+1) * kTilePitch + px + 1;
+			uint tileCornerIdx = (py+1) * kTilePitch + px + 1;
 			float p[4][4];
 			for (int j = 0; j < 4; j++)
 			{
@@ -473,74 +460,80 @@ void hook()
 	groupMemoryBarrier();
 	barrier();
 
-	for (int k = int(threadIdx); k < NIS_BLOCK_WIDTH * NIS_BLOCK_HEIGHT; k += NIS_THREAD_GROUP_SIZE)
-	{
-		const ivec2 pos = ivec2(k % NIS_BLOCK_WIDTH, k / NIS_BLOCK_WIDTH);
+    // output coord within a tile
+    const ivec2 pos = ivec2(uint(threadIdx) % uint(NIS_BLOCK_WIDTH), uint(threadIdx) / uint(NIS_BLOCK_WIDTH));
+    // x coord inside the output image
+    const int dstX = dstBlockX + pos.x;
+    // x coord inside the input image
+    const float srcX = (0.5f + dstX) * kScaleX - 0.5f;
+    // nearest integer part
+    const int px = int(floor(srcX) - srcBlockStartX);
+    // fractional part
+    const float fx = srcX - floor(srcX);
+    // discretized phase
+    const int fx_int = int(fx * kPhaseCount);
 
-		const int dstX = dstBlockX + pos.x;
-		const int dstY = dstBlockY + pos.y;
+    for (int k = 0; k < NIS_BLOCK_WIDTH * NIS_BLOCK_HEIGHT / NIS_THREAD_GROUP_SIZE; ++k)
+    {
+        // y coord inside the output image
+        const int dstY = dstBlockY + pos.y + k * (NIS_THREAD_GROUP_SIZE / NIS_BLOCK_WIDTH);
+        // y coord inside the input image
+        const float srcY = (0.5f + dstY) * kScaleY - 0.5f;
 
-		const float srcX = (0.5f + dstX) * kScaleX - 0.5f;
-		const float srcY = (0.5f + dstY) * kScaleY - 0.5f;
+        // nearest integer part
+        const int py = int(floor(srcY) - srcBlockStartY);
+        // fractional part
+        const float fy = srcY - floor(srcY);
+        // discretized phase
+        const int fy_int = int(fy * kPhaseCount);
 
-		const int px = int(floor(srcX) - srcBlockStartX);
-		const int py = int(floor(srcY) - srcBlockStartY);
+        // generate weights for directional filters
+        const int startEdgeMapIdx = py * kEdgeMapPitch + px;
+        vec4 edge[2][2];
+        for (int i = 0; i < 2; i++)
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                // need to shift edge map sampling since it's a 2x2 centered inside 6x6 grid
+                edge[i][j] = shEdgeMap[startEdgeMapIdx + (i * kEdgeMapPitch) + j];
+            }
+        }
+        const vec4 w = GetInterpEdgeMap(edge, fx, fy) * NIS_SCALE_INT;
 
-		const int startTileIdx = py * kTilePitch + px;
+        // load 6x6 support to regs
+        const int startTileIdx = py * kTilePitch + px;
+        float p[6][6];
+        {
+            for (int i = 0; i < 6; ++i)
+            {
+                for (int j = 0; j < 6; ++j)
+                {
+                    p[i][j] = shPixelsY[startTileIdx + i * kTilePitch + j];
+                }
+            }
+        }
 
-		// load 6x6 support to regs
-		float p[6][6];
-		{
-			for (int i = 0; i < 6; ++i)
-			{
-				for (int j = 0; j < 6; ++j)
-				{
-					p[i][j] = shPixelsY[startTileIdx + i * kTilePitch + j];
-				}
-			}
-		}
+        // weigth for luma
+        const float baseWeight = NIS_SCALE_FLOAT - w.x - w.y - w.z - w.w;
 
-		// compute discretized filter phase
-		const float fx = srcX - floor(srcX);
-		const float fy = srcY - floor(srcY);
-		const int fx_int = int(fx * kPhaseCount);
-		const int fy_int = int(fy * kPhaseCount);
+        // final luma is a weighted product of directional & normal filters
+        float opY = 0;
 
-		// get traditional scaler filter output
-		const float pixel_n = FilterNormal(p, fx_int, fy_int);
+        // get traditional scaler filter output
+        opY += FilterNormal(p, fx_int, fy_int) * baseWeight;
 
-		// get directional filter bank output
-		vec4 opDirYU = GetDirFilters(p, fx, fy, fx_int, fy_int);
+        // get directional filter bank output
+        opY += AddDirFilters(p, fx, fy, fx_int, fy_int, w);
 
-		// final luma is a weighted product of directional & normal filters
+        // do bilinear tap for luma upscaling
+		vec4 op = vec4(0.0, 0.0, 0.0, 1.0);
+		op.r = HOOKED_tex(vec2((srcX + 0.5f) * kSrcNormX, (srcY + 0.5f) * kSrcNormY)).r;
 
-		// generate weights for directional filters
-		const int startEdgeMapIdx = py * kEdgeMapPitch + px;
-		vec4 edge[2][2];
-		for (int i = 0; i < 2; i++)
-		{
-			for (int j = 0; j < 2; j++)
-			{
-				// need to shift edge map sampling since it's a 2x2 centered inside 6x6 grid
-				edge[i][j] = shEdgeMap[startEdgeMapIdx + (i * kEdgeMapPitch) + j];
-			}
-		}
-		const vec4 w = GetInterpEdgeMap(edge, fx, fy) * NIS_SCALE_INT;
+        const float corr = opY * (1.0f / NIS_SCALE_FLOAT) - op.r;
+        op += corr;
 
-		// final pixel is a weighted sum filter outputs
-		const float opY = (opDirYU.x * w.x + opDirYU.y * w.y + opDirYU.z * w.z + opDirYU.w * w.w +
-			pixel_n * (NIS_SCALE_FLOAT - w.x - w.y - w.z - w.w)) * (1.0f / NIS_SCALE_FLOAT);
-		// do bilinear tap for chroma upscaling
-		// vec4 op = NVTEX_SAMPLE(in_texture, samplerLinearClamp, vec2((dstX + 0.5f) * kDstNormX, (dstY + 0.5f) * kDstNormY));
-		vec4 op = HOOKED_tex(vec2((dstX + 0.5f) * kDstNormX, (dstY + 0.5f) * kDstNormY));
-
-		const float corr = opY * (1.0f / NIS_SCALE_FLOAT) - getY(vec3(op.x, op.y, op.z));
-		op.x += corr;
-		op.y += corr;
-		op.z += corr;
-
-		imageStore(out_image, ivec2(dstX, dstY), op);
-	}
+        imageStore(out_image, ivec2(dstX, dstY), op);
+    }
 }
 
 //!TEXTURE coef_scaler
