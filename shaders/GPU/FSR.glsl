@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// FidelityFX FSR by AMD
+// FidelityFX FSR v1.0.2 by AMD
 // ported to mpv by agyild
 
 // Changelog
@@ -27,16 +27,16 @@
 // Removed transparency preservation mechanism since the alpha channel is a separate source plan than LUMA
 // 
 // Notes
-// Per AMD's guidelines only upscales content up to 4x (e.g., 1080p -> 2160p, 720p -> 1440p etc.) and everything else in between, if
-// you want to disable this upper limit replace the WHEN directive with "OUTPUT.w OUTPUT.h * LUMA.w LUMA.h * / 1.0 >".
+// Per AMD's guidelines only upscales content up to 4x (e.g., 1080p -> 2160p, 720p -> 1440p etc.) and everything else in between,
+// that means FSR will scale up to 4x at maximum, and any further scaling will be processed by mpv's scalers
 
 //!HOOK LUMA
 //!BIND HOOKED
 //!SAVE EASUTEX
-//!DESC FidelityFX Super Resolution 1.0 (EASU)
+//!DESC FidelityFX Super Resolution v1.0.2 (EASU)
 //!WHEN OUTPUT.w OUTPUT.h * LUMA.w LUMA.h * / 1.0 >
-//!WIDTH OUTPUT.w
-//!HEIGHT OUTPUT.h
+//!WIDTH OUTPUT.w OUTPUT.w LUMA.w 2 * < * LUMA.w 2 * OUTPUT.w LUMA.w 2 * > * + OUTPUT.w OUTPUT.w LUMA.w 2 * = * +
+//!HEIGHT OUTPUT.h OUTPUT.h LUMA.h 2 * < * LUMA.h 2 * OUTPUT.h LUMA.h 2 * > * + OUTPUT.h OUTPUT.h LUMA.h 2 * = * +
 //!COMPONENTS 1
 
 // Shader code
@@ -140,7 +140,7 @@ void FsrEasuSet(
 vec4 hook() {
 	//------------------------------------------------------------------------------------------------------------------------------
 	// Get position of 'f'.
-	vec2 pp = HOOKED_pos * input_size - vec2(0.5) + tex_offset;
+	vec2 pp = HOOKED_pos * HOOKED_size - vec2(0.5);
 	vec2 fp = floor(pp);
 	pp -= fp;
 	//------------------------------------------------------------------------------------------------------------------------------
@@ -162,27 +162,27 @@ vec4 hook() {
 	// Allowing dead-code removal to remove the 'z's.
 	
  #if (defined(HOOKED_gather) && (__VERSION__ >= 400 || (GL_ES && __VERSION__ >= 310)))
-	vec4 bczzL = HOOKED_gather(vec2((fp + vec2(1.0, -1.0)) / HOOKED_size), 0);
-	vec4 ijfeL = HOOKED_gather(vec2((fp + vec2(0.0,  1.0)) / HOOKED_size), 0);
-	vec4 klhgL = HOOKED_gather(vec2((fp + vec2(2.0,  1.0)) / HOOKED_size), 0);
-	vec4 zzonL = HOOKED_gather(vec2((fp + vec2(1.0,  3.0)) / HOOKED_size), 0);
+	vec4 bczzL = HOOKED_gather(vec2((fp + vec2(1.0, -1.0)) * HOOKED_pt), 0);
+	vec4 ijfeL = HOOKED_gather(vec2((fp + vec2(0.0,  1.0)) * HOOKED_pt), 0);
+	vec4 klhgL = HOOKED_gather(vec2((fp + vec2(2.0,  1.0)) * HOOKED_pt), 0);
+	vec4 zzonL = HOOKED_gather(vec2((fp + vec2(1.0,  3.0)) * HOOKED_pt), 0);
 #else
 	// pre-OpenGL 4.0 compatibility
-	float b = HOOKED_tex(vec2((fp + vec2(0.5, -0.5)) / HOOKED_size)).r;
-	float c = HOOKED_tex(vec2((fp + vec2(1.5, -0.5)) / HOOKED_size)).r;
+	float b = HOOKED_tex(vec2((fp + vec2(0.5, -0.5)) * HOOKED_pt)).r;
+	float c = HOOKED_tex(vec2((fp + vec2(1.5, -0.5)) * HOOKED_pt)).r;
 	
-	float e = HOOKED_tex(vec2((fp + vec2(-0.5, 0.5)) / HOOKED_size)).r;
-	float f = HOOKED_tex(vec2((fp + vec2( 0.5, 0.5)) / HOOKED_size)).r;
-	float g = HOOKED_tex(vec2((fp + vec2( 1.5, 0.5)) / HOOKED_size)).r;
-	float h = HOOKED_tex(vec2((fp + vec2( 2.5, 0.5)) / HOOKED_size)).r;
+	float e = HOOKED_tex(vec2((fp + vec2(-0.5, 0.5)) * HOOKED_pt)).r;
+	float f = HOOKED_tex(vec2((fp + vec2( 0.5, 0.5)) * HOOKED_pt)).r;
+	float g = HOOKED_tex(vec2((fp + vec2( 1.5, 0.5)) * HOOKED_pt)).r;
+	float h = HOOKED_tex(vec2((fp + vec2( 2.5, 0.5)) * HOOKED_pt)).r;
 	
-	float i = HOOKED_tex(vec2((fp + vec2(-0.5, 1.5)) / HOOKED_size)).r;
-	float j = HOOKED_tex(vec2((fp + vec2( 0.5, 1.5)) / HOOKED_size)).r;
-	float k = HOOKED_tex(vec2((fp + vec2( 1.5, 1.5)) / HOOKED_size)).r;
-	float l = HOOKED_tex(vec2((fp + vec2( 2.5, 1.5)) / HOOKED_size)).r;
+	float i = HOOKED_tex(vec2((fp + vec2(-0.5, 1.5)) * HOOKED_pt)).r;
+	float j = HOOKED_tex(vec2((fp + vec2( 0.5, 1.5)) * HOOKED_pt)).r;
+	float k = HOOKED_tex(vec2((fp + vec2( 1.5, 1.5)) * HOOKED_pt)).r;
+	float l = HOOKED_tex(vec2((fp + vec2( 2.5, 1.5)) * HOOKED_pt)).r;
 	
-	float n = HOOKED_tex(vec2((fp + vec2(0.5, 2.5) )/ HOOKED_size)).r;
-	float o = HOOKED_tex(vec2((fp + vec2(1.5, 2.5) )/ HOOKED_size)).r;
+	float n = HOOKED_tex(vec2((fp + vec2(0.5, 2.5) ) * HOOKED_pt)).r;
+	float o = HOOKED_tex(vec2((fp + vec2(1.5, 2.5) ) * HOOKED_pt)).r;
 
 	vec4 bczzL = vec4(b, c, 0.0, 0.0);
 	vec4 ijfeL = vec4(i, j, f, e);
@@ -267,7 +267,7 @@ vec4 hook() {
 
 //!HOOK LUMA
 //!BIND EASUTEX
-//!DESC FidelityFX Super Resolution 1.0 (RCAS)
+//!DESC FidelityFX Super Resolution v1.0.2 (RCAS)
 //!WIDTH EASUTEX.w
 //!HEIGHT EASUTEX.h
 //!COMPONENTS 1
@@ -299,20 +299,20 @@ vec4 hook() {
 	//  d e f
 	//    h
 #if (defined(EASUTEX_gather) && (__VERSION__ >= 400 || (GL_ES && __VERSION__ >= 310)))
-	vec3 bde = EASUTEX_gather(EASUTEX_pos + EASUTEX_pt * (vec2(-0.5) + tex_offset), 0).xyz;
+	vec3 bde = EASUTEX_gather(EASUTEX_pos + EASUTEX_pt * vec2(-0.5), 0).xyz;
 	float b = bde.z;
 	float d = bde.x;
 	float e = bde.y;
 
-	vec2 fh = EASUTEX_gather(EASUTEX_pos + EASUTEX_pt * (vec2(0.5) + tex_offset), 0).zx;
+	vec2 fh = EASUTEX_gather(EASUTEX_pos + EASUTEX_pt * vec2(0.5), 0).zx;
 	float f = fh.x;
 	float h = fh.y;
 #else
-	float b = EASUTEX_texOff(vec2( 0.0, -1.0) + tex_offset).r;
-	float d = EASUTEX_texOff(vec2(-1.0,  0.0) + tex_offset).r;
-	float e = EASUTEX_texOff(tex_offset).r;
-	float f = EASUTEX_texOff(vec2(1.0, 0.0) + tex_offset).r;
-	float h = EASUTEX_texOff(vec2(0.0, 1.0) + tex_offset).r;
+	float b = EASUTEX_texOff(vec2( 0.0, -1.0)).r;
+	float d = EASUTEX_texOff(vec2(-1.0,  0.0)).r;
+	float e = EASUTEX_tex(EASUTEX_pos).r;
+	float f = EASUTEX_texOff(vec2(1.0, 0.0)).r;
+	float h = EASUTEX_texOff(vec2(0.0, 1.0)).r;
 #endif
 
 	// Min and max of ring.
