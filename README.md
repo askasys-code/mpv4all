@@ -1,4 +1,4 @@
-# mpv4all v3.1 【2022 Edition】
+# mpv4all v3.2 【2022 Edition】
 
 So many mpv configs but still not satisfied? Try this, and you won't regret it.
 
