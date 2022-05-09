@@ -24,6 +24,7 @@ The default values of the config are <kbd>gpu-api=auto</kbd> and <kbd>hwdec=auto
 
 ### Video functions
 
+- <kbd> ! </kbd> - Pixel Perfect (Nearest neighbor scale)
 - <kbd> 1 </kbd> - Upscale with SSimSuperRes (Enhance mpv internal upscaler)
 - <kbd> 2 </kbd> - Upscale with SSimSuperRes + FSRCNNX (Super Resolution Convolutional Neural Network X)
 - <kbd> 3 </kbd> - Upscale with NVIDIA Image Scaling (NIS)
