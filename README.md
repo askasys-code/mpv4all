@@ -29,9 +29,9 @@ If you ha have a Radeon or Intel Arc GPU, please set <kbd>hwdec=auto-copy</kbd>.
 - <kbd> 1 </kbd> - Upscale with SSimSuperRes (Enhance mpv internal upscaler)
 - <kbd> 2 </kbd> - Upscale with AMD FidelityFX™ Super Resolution (FSR)
 - <kbd> 3 </kbd> - Upscale with NVIDIA Image Scaling (NIS)
-- <kbd> 4 </kbd> - Pixel Perfect (Nearest neighbor scale)
-- <kbd> 5 </kbd> - Upscale with Anime4K Ultra Quality (extremely GPU intensive)
-- <kbd> 6 </kbd> - Upscale with Anime4K High Quality (very GPU intensive) 
+- <kbd> 4 </kbd> - Pixel Perfect (Nearest neighbor scaling)
+- <kbd> 5 </kbd> - Upscale with Anime4K Ultra Quality (Extremely GPU intensive)
+- <kbd> 6 </kbd> - Upscale with Anime4K High Quality (Very GPU intensive) 
 - <kbd> 7 </kbd> - Upscale with SSimSuperRes + FSRCNNX (Very recommanded for DVD content)
 - <kbd> 8 </kbd> - Add Film Grain #Type 1
 - <kbd> 9 </kbd> - Add Film Grain #Type 2
