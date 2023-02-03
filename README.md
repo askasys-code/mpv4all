@@ -2,6 +2,7 @@
 
 <p align="left"><img width=50% src="https://i.imgur.com/Qf2ah95.png" alt=""></p>
 Color palette from: https://draculatheme.com/
+
 ______________________________________________________
 So many mpv configs but still not satisfied? Try this, and you won't regret it.
 
