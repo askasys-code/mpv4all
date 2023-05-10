@@ -44,7 +44,7 @@ If you ha have a Radeon or Intel Arc GPU, please set <kbd>hwdec=auto-copy</kbd>.
 - <kbd> shift+w </kbd> - Video Cutter function # instructions here: https://github.com/ekisu/mpv-webm
 ______________________________________________________
 
-### Audio functions (Only for Surround audio devices/drivers)
+### Audio functions
 
 - <kbd> b </kbd> - Bass booster
 - <kbd> a </kbd> - Upmix audio from Stereo 2.0ch to Surround 7.1ch
