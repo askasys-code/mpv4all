@@ -50,7 +50,7 @@ ______________________________________________________
 - <kbd> a </kbd> - Upmix audio from Stereo 2.0ch to Surround 7.1ch
 - <kbd> Alt+a </kbd> - Downmix audio from Surround to Stereo 2.0ch
 - <kbd> A </kbd> - Boost rear audio channels, just for fun.
-- <kbd> CTRL+a </kbd> - Listen only rear channels, just for fun. This works even for native 5.1 and 7.1 audio tracks
+- <kbd> CTRL+a </kbd> - Listen only rear channels, just for fun.
 ______________________________________________________
 
 ### Other controls
@@ -64,11 +64,5 @@ ______________________________________________________
 
 ______________________________________________________
 
-
-## Example of Boosted Upmix Surround 7.1ch
-
-<p align="center"><img width=100% src="https://i.imgur.com/3wANjgW.png" alt="Boosted Upmix Surround 7.1ch"></p>
-
-### *tested with Dolby Atmos audio driver for Windows 11. 
 
 All the shaders are property of their rightful owners. I have only edited mpv.conf, input.conf and some LUA scripts to fits better with my configuration.
