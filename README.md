@@ -1,8 +1,4 @@
-# mpv4all v4.1 x Dracula theme
-
-<p align="left"><img width=50% src="https://i.imgur.com/Qf2ah95.png" alt=""></p>
-Color palette from: https://draculatheme.com/
-
+# mpv4all v4.5
 ______________________________________________________
 So many mpv configs but still not satisfied? Try this, and you won't regret it.
 
@@ -11,17 +7,12 @@ This is my personal mpv configuration for the best quality experience with NVIDI
 You can use this configuration to have an universal video, image and audio player with many convenient functions.
 The main functions are the toggle keys for upscaling.
 
-The default values of the config are <kbd>gpu-api=auto</kbd> and <kbd>hwdec=nvdec-copy</kbd>. 
-If you ha have a Radeon or Intel Arc GPU, please set <kbd>hwdec=auto-copy</kbd>.
-
-<p align="left"><img width=50% src="https://i.imgur.com/R9OoxI2.png" alt=""></p>
-
 ## Software Requirements
 - mpv https://github.com/mpv-player/mpv | Download: https://github.com/zhongfly/mpv-winbuild/releases
 - Windows OS (I haven't tested on Linux.)
 
 ## System Requirements
-- Minimum: At least a quad core CPU and a discrete GPU (GTX 750, RX 550 for example. I tried a GT 440, and it's not powerful enough for upscaling.)
+- Minimum: At least a quad core CPU. I tried a GT 440, and it's not powerful enough for upscaling.
 - Recommanded: GTX 1060 or RX 580 equivalent for 4K upscaling.
 
 # Keyboard Bindings:
@@ -31,7 +22,7 @@ If you ha have a Radeon or Intel Arc GPU, please set <kbd>hwdec=auto-copy</kbd>.
 - <kbd> 1 </kbd> - Upscale with NVIDIA Image Scaling (NIS)
 - <kbd> 2 </kbd> - Upscale with AMD FidelityFX™ Super Resolution (FSR)
 - <kbd> 3 </kbd> - Pixel Perfect (Nearest neighbor scaling)
-- <kbd> 4 </kbd> - Upscale with SSimSuperRes + FSRCNNX (Very recommanded for DVD content)
+- <kbd> 4 </kbd> - Upscale with SSimSuperRes
 - <kbd> 8 </kbd> - Add Film Grain #Type 1
 - <kbd> 9 </kbd> - Add Film Grain #Type 2
 - <kbd> 0 </kbd> - Disable everything and return to the default values
