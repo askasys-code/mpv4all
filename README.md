@@ -1,6 +1,5 @@
-# mpv4all v4.5
+# mpv4all v5.0
 ______________________________________________________
-So many mpv configs but still not satisfied? Try this, and you won't regret it.
 
 This is my personal mpv configuration for the best quality experience with NVIDIA GPU.
 
@@ -12,24 +11,20 @@ The main functions are the toggle keys for upscaling.
 - Windows OS (I haven't tested on Linux.)
 
 ## System Requirements
-- Minimum: At least a quad core CPU. I tried a GT 440, and it's not powerful enough for upscaling.
-- Recommanded: GTX 1060 or RX 580 equivalent for 4K upscaling.
+- Minimum: GTX 750 or equivalent for basic upcaling with NIS and FSR.
+- Recommanded: RTX 30 or 40 series.
 
 # Keyboard Bindings:
 
 ### Video functions
 
 - <kbd> 1 </kbd> - Upscale with NVIDIA Image Scaling (NIS)
-- <kbd> 2 </kbd> - Upscale with AMD FidelityFX™ Super Resolution (FSR)
-- <kbd> 3 </kbd> - Pixel Perfect (Nearest neighbor scaling)
-- <kbd> 4 </kbd> - Upscale with SSimSuperRes
-- <kbd> 8 </kbd> - Add Film Grain #Type 1
-- <kbd> 9 </kbd> - Add Film Grain #Type 2
+- <kbd> 2 </kbd> - AI Upscale with RTX Video Super Resolution
+- <kbd> 8 </kbd> - Nearest Neighbor scaling
+- <kbd> 9 </kbd> - Upscale with AMD FidelityFX™ Super Resolution (FSR)
 - <kbd> 0 </kbd> - Disable everything and return to the default values
 - <kbd> CTRL+\ </kbd> - Display actual shaders
 - <kbd> r </kbd> - Rotate video
-- <kbd> CTRL+d </kbd> - Activate bwdif deinterlace
-- <kbd> d </kbd> - Activate yadif deinterlace
 - <kbd> D </kbd> - Activate deband
 - <kbd> shift+c </kbd> - Auto crop function
 - <kbd> shift+w </kbd> - Video Cutter function # instructions here: https://github.com/ekisu/mpv-webm
