@@ -1,4 +1,4 @@
-# mpv4all v5.0
+# mpv4all v5.1
 ______________________________________________________
 
 This is my personal mpv configuration for the best quality experience with NVIDIA GPU.
@@ -12,7 +12,7 @@ The main functions are the toggle keys for upscaling.
 
 ## System Requirements
 - Minimum: GTX 750 or equivalent for basic upcaling with NIS and FSR.
-- Recommanded: RTX 30 or 40 series.
+- Recommanded: RTX 30 or 40 series for RTX Video Upscaling.
 
 # Keyboard Bindings:
 
