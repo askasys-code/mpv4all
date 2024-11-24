@@ -45,8 +45,8 @@ ______________________________________________________
 - Mouse <kbd> WHEEL_UP </kbd> <kbd> WHEEL_DOWN </kbd> - Zoom-in and Zoom-out
 - Mouse <kbd> LEFT_CLICK </kbd> - Click and hold to move the image after the zoom
 - Mouse <kbd> RIGHT_CLICK </kbd> - Pause
-- <kbd>CTRL+LEFT</kbd> Previous file
-- <kbd>CTRL+RIGHT</kbd> Next file
+- <kbd> < </kbd> Previous file
+- <kbd> > </kbd> Next file
 
 ______________________________________________________
 
