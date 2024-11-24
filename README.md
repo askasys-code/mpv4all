@@ -26,7 +26,6 @@ The main functions are the toggle keys for upscaling.
 - <kbd> CTRL+\ </kbd> - Display actual shaders
 - <kbd> r </kbd> - Rotate video
 - <kbd> D </kbd> - Activate deband
-- <kbd> shift+c </kbd> - Auto crop function
 - <kbd> shift+w </kbd> - Video Cutter function # instructions here: https://github.com/ekisu/mpv-webm
 ______________________________________________________
 
