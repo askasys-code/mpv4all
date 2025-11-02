@@ -1,4 +1,4 @@
-# mpv4all v5.1
+# mpv4all v5.2
 ______________________________________________________
 
 This is my personal mpv configuration for the best quality experience with NVIDIA GPU.
