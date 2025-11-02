@@ -8,7 +8,7 @@ The main functions are the toggle keys for upscaling.
 
 ## Software Requirements
 - mpv https://github.com/mpv-player/mpv | Download: https://github.com/zhongfly/mpv-winbuild/releases
-- Windows OS (I haven't tested on Linux.)
+- Windows OS (Don't work on Linux.)
 
 ## System Requirements
 - Minimum: GTX 750 or equivalent for basic upcaling with NIS and FSR.
@@ -19,9 +19,10 @@ The main functions are the toggle keys for upscaling.
 ### Video functions
 
 - <kbd> 1 </kbd> - Upscale with NVIDIA Image Scaling (NIS)
-- <kbd> 2 </kbd> - AI Upscale with RTX Video Super Resolution
-- <kbd> 8 </kbd> - Nearest Neighbor scaling
-- <kbd> 9 </kbd> - Upscale with AMD FidelityFX™ Super Resolution (FSR)
+- <kbd> 2 </kbd> - AI Upscale with RTX Video Super Resolution (2x)
+- <kbd> 3 </kbd> - AI Upscale with RTX Video Super Resolution (3x)
+- <kbd> 4 </kbd> - Upscale with AMD FidelityFX™ Super Resolution (FSR)
+- <kbd> 9 </kbd> - Toggle scales: Nearest, Lanczos
 - <kbd> 0 </kbd> - Disable everything and return to the default values
 - <kbd> CTRL+\ </kbd> - Display actual shaders
 - <kbd> r </kbd> - Rotate video
