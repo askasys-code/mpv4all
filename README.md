@@ -130,6 +130,28 @@ Press **`W` (Shift + W)** on any playing media to trigger an on-screen encoding 
 
 ---
 
+## 🛠️ Requirements & Installation
+
+1. **MPV**: A modern build compiled for Windows (recommended: **v0.37+** or recent Git builds from shinchiro / zhongfly).
+2. **NVIDIA GPU (Optional, recommended for AI features)**:
+   * GeForce RTX 2000-series or newer.
+   * NVIDIA Game Ready / Studio Drivers **>= 530.xx** (for RTX VSR) and **>= 551.xx** (for RTX True HDR).
+   * Enable "RTX Video Enhancement" inside the *NVIDIA Control Panel* -> *Adjust video image settings*.
+3. **Installation Steps**:
+   * Clone or download this repository.
+   * Copy the contents of the `mpv/` directory into your MPV configuration folder:
+     ```text
+     %APPDATA%\mpv\
+     ```
+     *(or into your `portable_config/` folder if you use a portable mpv installation)*.
+
+---
+
+## 📜 Credits & Acknowledgments
+
+* MPV GLSL shader ports: **agyild** (*CAS, FSR, NIS, SGSR*).
+* Architected, assembled, and refined by **[askasys-code](https://github.com/askasys-code)** — powered by Vibe Coding and Feels.
+
 ## 📂 Directory Layout
 
 ```text
@@ -149,3 +171,5 @@ mpv/
     ├── autohdr.lua                 # Smart RTX Video True HDR Controller
     ├── autovsr.lua                 # Dynamic Resolution RTX VSR Auto-Scaler
     └── webm.lua                    # Integrated WebM / MP4 / GIF Clip Maker
+
+---
