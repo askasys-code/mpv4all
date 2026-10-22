@@ -1,7 +1,5 @@
 # ⚡ mpv4all
 
-# MPV Master Configuration: Videophile, Studio Audio & High-Res Image Suite
-
 An elite, highly optimized configuration suite for [mpv](https://mpv.io) tailored for modern Windows 11 / Direct3D 11 environments, NVIDIA RTX hardware, high-refresh OLED displays, audiophile headphone listening, and high-resolution photo viewing.
 
 ---
