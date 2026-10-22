@@ -1,6 +1,6 @@
 -- =========================================================================
--- MPV High-End Audiophile & Studio Audio HUD
--- Pixel-Perfect Floating Capsule Aligned to Artwork & Permanent Hi-Fi Rack
+-- MPV High-End Audiophile & Studio HUD + Integrated DSP Controller
+-- Pixel-Perfect Floating Capsule, Pure Audio Rack & Preset Cycling
 -- =========================================================================
 
 local mp = require("mp")
@@ -12,8 +12,8 @@ local opts = {
     enable_hud = true,
     font_face = "sans-serif",
     
-    -- Album Art Floating Capsule Layout
-    capsule_margin_top = 14,        -- Top offset from artwork edge (scaled)
+    -- Floating Capsule Layout (Artwork & Video Mode)
+    capsule_margin_top = 14,        -- Top offset from video/artwork edge (scaled)
     capsule_height = 54,            -- Slim container height in pixels (scaled)
     capsule_padding_x = 16,         -- Horizontal inner padding (scaled)
     capsule_max_width = 960,        -- Maximum width limit for the capsule
@@ -22,7 +22,7 @@ local opts = {
     -- Color Palette (ASS Hex format: BBGGRR)
     color_lossless = "78C850",     -- Emerald Green (True Lossless / Bit-Perfect)
     color_lossy    = "3BB0FF",     -- Warm Amber (Lossy: Opus, MP3, AAC)
-    color_cyan     = "D7C800",     -- Studio Cyan (Direct PCM pipeline / Exclusive mode)
+    color_cyan     = "D7C800",     -- Studio Cyan (Direct PCM / Exclusive mode)
     color_gold     = "00A5FF",     -- Gold / Orange (Track, Disc & Container info)
     color_white    = "FFFFFF",     -- Pure White (Main Track Title)
     color_silver   = "D0D0D0",     -- Light Silver (Artist & Album)
@@ -33,8 +33,69 @@ local opts = {
 
 mpopts.read_options(opts, "audio_player")
 
-local is_audio_active = false
-local hud_visible = true
+local hud_visible = false
+
+-- =========================================================================
+-- Curated Audio DSP Presets
+-- =========================================================================
+
+local dsp_presets = {
+    {
+        filter = "surround=chl_out=7.1",
+        label = "Audio DSP: Windows Sonic 7.1 Spatial Upmix"
+    },
+    {
+        filter = "bs2b=profile=default",
+        label = "Audio DSP: BS2B Studio Crossfeed"
+    },
+    {
+        filter = "stereowiden",
+        label = "Audio DSP: Stereo Soundstage Expander"
+    },
+    {
+        filter = "dynaudnorm",
+        label = "Audio DSP: Dialogue Boost & Night Mode"
+    },
+    {
+        filter = "",
+        label = "Audio DSP: Direct / Bit-Perfect (OFF)"
+    }
+}
+
+-- Detect current filter state dynamically
+local function get_current_dsp_index()
+    local current_af = mp.get_property("af") or ""
+    if current_af == "" then
+        return #dsp_presets
+    end
+
+    for i, p in ipairs(dsp_presets) do
+        if p.filter ~= "" and current_af:find(p.filter:match("^([^=]+)")) then
+            return i
+        end
+    end
+    return #dsp_presets
+end
+
+-- Cycle to next preset in sequence
+local function cycle_audio_dsp()
+    local idx = get_current_dsp_index()
+    idx = (idx % #dsp_presets) + 1
+
+    local selected = dsp_presets[idx]
+    mp.set_property("af", selected.filter)
+    mp.osd_message(selected.label, 2.5)
+end
+
+-- Reset DSP to bypass/off
+local function reset_audio_dsp()
+    mp.set_property("af", "")
+    mp.osd_message("Audio DSP: Direct / Bit-Perfect (OFF)", 2)
+end
+
+-- =========================================================================
+-- Helper Utilities
+-- =========================================================================
 
 -- Sanitize strings to avoid ASS parser collisions
 local function escape_ass(str)
@@ -68,11 +129,24 @@ local function format_time(seconds)
     return string.format("%02d:%02d", m, s)
 end
 
--- Determine if current playback is audio-focused
-local function is_audio_stream()
-    local has_video = mp.get_property("current-tracks/video") ~= nil
-    local is_albumart = mp.get_property_bool("current-tracks/video/albumart", false)
-    return (not has_video) or is_albumart
+-- Determine exact media type: "video" | "albumart" | "image" | "audio"
+local function get_media_type()
+    local vtrack = mp.get_property_native("current-tracks/video")
+    if not vtrack then
+        local vid = mp.get_property_native("vid")
+        if vid and vid ~= "no" and vid ~= false then
+            return "video"
+        end
+        return "audio"
+    end
+
+    if vtrack.albumart == true then
+        return "albumart"
+    end
+    if vtrack.image == true then
+        return "image"
+    end
+    return "video"
 end
 
 -- Translate FFmpeg sample format into human-readable bit depth
@@ -87,7 +161,7 @@ local function get_bit_depth(fmt)
     return ""
 end
 
--- Format sample rate (including high-resolution PCM, DXD, and native DSD rates)
+-- Format sample rate
 local function format_sample_rate(sr)
     if not sr or sr <= 0 then return "" end
     if sr == 2822400 then return "DSD64 (2.82 MHz)" end
@@ -121,19 +195,14 @@ local function format_container(raw_codec)
     fmt = fmt:lower()
     local c = (raw_codec or ""):lower()
 
-    -- Suppress redundant native standard containers
-    -- 1. Standalone .opus files are natively wrapped in an Ogg container (RFC 7845)
     if c:find("opus") and fmt:find("ogg") then return "" end
-    -- 2. Native FLAC
     if c:find("flac") and fmt:find("flac") then return "" end
-    -- 3. Native MP3
     if c:find("mp3") and fmt:find("mp3") then return "" end
-    -- 4. Native WAV / PCM
     if c:find("pcm") and fmt:find("wav") then return "" end
 
     if fmt:find("ogg") then return "OGG" end
-    if fmt:find("matroska") or fmt:find("mkv") or fmt:find("mka") then return "MKA" end
-    if fmt:find("mp4") or fmt:find("m4a") or fmt:find("mov") then return "M4A" end
+    if fmt:find("matroska") or fmt:find("mkv") or fmt:find("mka") then return "MKV" end
+    if fmt:find("mp4") or fmt:find("m4a") or fmt:find("mov") then return "MP4" end
     if fmt:find("webm") then return "WEBM" end
     if fmt:find("flac") then return "FLAC" end
     if fmt:find("mp3") then return "MP3" end
@@ -144,7 +213,7 @@ end
 -- Codec mapping and Lossless vs Lossy classification
 local function analyze_codec(raw_codec)
     if not raw_codec or raw_codec == "" then
-        return "AUDIO", false
+        return "NO AUDIO", false
     end
 
     local c = raw_codec:lower()
@@ -177,7 +246,7 @@ local function format_file_size()
     return string.format("%.1f MB", size / (1024 * 1024))
 end
 
--- Hardware Signal Path Evaluation including Shared vs Exclusive WASAPI detection
+-- Hardware Signal Path Evaluation
 local function get_signal_path_status(is_lossless, in_sr, out_sr)
     local af_list = mp.get_property_native("af") or {}
     local active_filters = {}
@@ -188,18 +257,15 @@ local function get_signal_path_status(is_lossless, in_sr, out_sr)
         end
     end
 
-    -- 1. Active DSP takes visual precedence
     if #active_filters > 0 then
         local filter_name = table.concat(active_filters, ", ")
         return "DSP ACTIVE (" .. filter_name:upper() .. ")", opts.color_gold
     end
 
-    -- 2. Resampling detected
     if in_sr > 0 and out_sr > 0 and in_sr ~= out_sr then
         return string.format("RESAMPLED (%s -> %s)", format_sample_rate(in_sr), format_sample_rate(out_sr)), opts.color_lossy
     end
 
-    -- 3. Check WASAPI Exclusive vs Shared status
     local is_exclusive = mp.get_property_bool("audio-exclusive", false)
     local mode_tag = is_exclusive and "EXCLUSIVE" or "SHARED"
 
@@ -216,15 +282,18 @@ end
 
 -- Clear active OSD canvas
 local function clear_osd()
-    local screen_w, screen_h = mp.get_osd_size()
-    if screen_w and screen_h then
-        mp.set_osd_ass(screen_w, screen_h, "")
-    end
+    local fallback_w, fallback_h = mp.get_osd_size()
+    local w = fallback_w or 1280
+    local h = fallback_h or 720
+    mp.set_osd_ass(w, h, "")
 end
 
--- Main OSD Rendering Routine (Permanently displayed during audio)
+-- =========================================================================
+-- Main OSD Rendering Routine
+-- =========================================================================
+
 local function render_dashboard()
-    if not is_audio_active or not hud_visible or not opts.enable_hud then
+    if not hud_visible or not opts.enable_hud then
         clear_osd()
         return
     end
@@ -234,14 +303,13 @@ local function render_dashboard()
     local screen_w = dims.w or fallback_w or 0
     local screen_h = dims.h or fallback_h or 0
 
-    if screen_w == 0 or screen_h == 0 then
+    if screen_w <= 0 or screen_h <= 0 then
         return
     end
 
     local scale = math.max(0.65, math.min(screen_h / 720, 2.0))
-    local has_albumart = mp.get_property_bool("current-tracks/video/albumart", false)
+    local media_type = get_media_type()
 
-    -- Accurate video/artwork rectangle accounting for pillarbox/letterbox margins
     local ml = dims.ml or 0
     local mr = dims.mr or 0
     local mt = dims.mt or 0
@@ -252,7 +320,7 @@ local function render_dashboard()
     -- Metadata Retrieval
     local title = get_meta_tag({"title", "TIT2"})
     if title == "" then
-        title = mp.get_property("media-title") or mp.get_property("filename/no-ext") or "Unknown Track"
+        title = mp.get_property("media-title") or mp.get_property("filename/no-ext") or "Unknown Media"
     end
 
     local artist = get_meta_tag({"artist", "album_artist", "TPE1", "aART"})
@@ -264,7 +332,7 @@ local function render_dashboard()
     local replaygain = get_meta_tag({"replaygain_track_gain", "REPLAYGAIN_TRACK_GAIN"})
 
     local date = get_meta_tag({"date", "year", "originalyear", "TYER", "TDRC"})
-    if date:len() > 4 then date = date:sub(1, 4) end
+    if date and #date > 4 then date = date:sub(1, 4) end
 
     local track_num = get_meta_tag({"track", "tracknumber", "TRCK"})
     local disc_num = get_meta_tag({"disc", "discnumber", "TPOS"})
@@ -272,7 +340,7 @@ local function render_dashboard()
     local pl_count = mp.get_property_number("playlist-count", 1)
     local duration_str = format_time(mp.get_property_number("duration", 0))
 
-    -- Source Technical Specifications
+    -- Technical Audio Specifications
     local raw_codec = mp.get_property("audio-codec-name") or ""
     local codec, is_lossless = analyze_codec(raw_codec)
     local container_name = format_container(raw_codec)
@@ -285,24 +353,19 @@ local function render_dashboard()
     local bitrate_str = bitrate > 0 and string.format("%d kbps", math.floor(bitrate / 1000 + 0.5)) or ""
     local file_size_str = format_file_size()
 
-    -- Hardware Audio Output Specs
     local out_sr = mp.get_property_number("audio-out-params/samplerate", 0)
     local ao_device = (mp.get_property("current-ao") or "AUDIO OUT"):upper()
-
-    -- Signal Path Verification
     local signal_path_text, signal_path_color = get_signal_path_status(is_lossless, in_sr, out_sr)
 
     local ass = assdraw.ass_new()
 
-    if has_albumart then
-        -- =================================================================
-        -- ALBUM ART MODE: Slim Capsule Strictly Anchored to Artwork Bounds
-        -- =================================================================
+    if media_type == "video" or media_type == "albumart" then
+        -- Capsule Mode: Slim Floating Capsule (Album Art & Moving Videos)
         local target_w = vid_w - math.floor(32 * scale)
         local max_w = math.floor(opts.capsule_max_width * scale)
         local capsule_w = math.max(280, math.min(target_w, max_w))
-        local capsule_x = vid_x + math.floor((vid_w - capsule_w) / 2)
-        local capsule_y = vid_y + math.floor(opts.capsule_margin_top * scale)
+        local capsule_x = math.max(8, vid_x + math.floor((vid_w - capsule_w) / 2))
+        local capsule_y = math.max(8, vid_y + math.floor(opts.capsule_margin_top * scale))
         local capsule_h = math.floor(opts.capsule_height * scale)
         local pad = math.floor(opts.capsule_padding_x * scale)
 
@@ -324,7 +387,7 @@ local function render_dashboard()
         ass:rect_cw(capsule_x, capsule_y, capsule_x + capsule_w, capsule_y + 1)
         ass:draw_stop()
 
-        -- Left Column - Line 1: Track Number, Duration & Song Title
+        -- Left Column - Line 1: Track / Duration / Title
         local track_badge_parts = {}
         if track_num ~= "" then
             table.insert(track_badge_parts, track_num)
@@ -342,21 +405,43 @@ local function render_dashboard()
         ass:pos(capsule_x + pad, capsule_y + math.floor(24 * scale))
         ass:append(string.format("{\\b1\\c&H%s&}%s{\\c&H%s&}%s", opts.color_gold, escape_ass(track_prefix), opts.color_white, escape_ass(title)))
 
-        -- Left Column - Line 2: Artist, Album, Year & ReplayGain (if present)
+        -- Left Column - Line 2: Artist, Album OR Video Stream Technical Specs
         local sub_line = {}
         if artist ~= "" then table.insert(sub_line, artist) end
         if album ~= "" then table.insert(sub_line, "— " .. album) end
-        if date ~= "" then table.insert(sub_line, "(" .. date .. ")") end
+        if date and date ~= "" then table.insert(sub_line, "(" .. date .. ")") end
         if replaygain ~= "" then table.insert(sub_line, string.format("{\\c&H%s&}[RG: %s]{\\c&H%s&}", opts.color_muted, escape_ass(replaygain), opts.color_silver)) end
-        local sub_text = table.concat(sub_line, "  ")
+        
+        if #sub_line == 0 and media_type == "video" then
+            local v_w = mp.get_property("width") or ""
+            local v_h = mp.get_property("height") or ""
+            local v_codec = (mp.get_property("video-codec") or ""):upper()
+            local v_fps = mp.get_property_number("container-fps", 0)
+            local v_hwdec = mp.get_property("hwdec-current") or "no"
 
+            local v_info = {}
+            if v_w ~= "" and v_h ~= "" then table.insert(v_info, v_w .. "x" .. v_h) end
+            if v_fps > 0 then
+                local fps_str = (v_fps % 1 == 0) and string.format("%d fps", v_fps) or string.format("%.2f fps", v_fps)
+                table.insert(v_info, fps_str)
+            end
+            if v_codec ~= "" then
+                local hw_tag = v_hwdec ~= "no" and (" (" .. v_hwdec .. ")") or ""
+                table.insert(v_info, v_codec .. hw_tag)
+            end
+            if #v_info > 0 then
+                table.insert(sub_line, "VIDEO: " .. table.concat(v_info, " • "))
+            end
+        end
+
+        local sub_text = table.concat(sub_line, "  ")
         local sub_size = math.floor(11 * scale)
         ass:new_event()
         ass:append(string.format("{\\an1\\fn%s\\b0\\fs%d\\c&H%s&\\bord1\\3c&H000000&\\shad1}", opts.font_face, sub_size, opts.color_silver))
         ass:pos(capsule_x + pad, capsule_y + math.floor(45 * scale))
         ass:append(escape_ass(sub_text))
 
-        -- Right Column - Line 1: Codec [LOSSY/LOSSLESS] (Container if non-standard) | Bit Depth | Sample Rate | Bitrate
+        -- Right Column - Line 1: Codec [LOSSY/LOSSLESS] | Bit Depth | Sample Rate | Bitrate
         local quality_tag = is_lossless and "LOSSLESS" or "LOSSY"
         local codec_color = is_lossless and opts.color_lossless or opts.color_lossy
         
@@ -389,9 +474,7 @@ local function render_dashboard()
         ass:append(table.concat(tech_p2, "  •  "))
 
     else
-        -- =================================================================
-        -- PURE AUDIO MODE: Permanent Studio Rack (Black Screen)
-        -- =================================================================
+        -- Pure Audio Mode: Permanent Studio Rack (Black Screen)
         local center_y = screen_h * 0.40
 
         local index_components = {}
@@ -427,7 +510,7 @@ local function render_dashboard()
         if album ~= "" then
             table.insert(artist_album_parts, string.format("{\\c&H%s&}%s", opts.color_silver, escape_ass(album)))
         end
-        if date ~= "" then
+        if date and date ~= "" then
             table.insert(artist_album_parts, string.format("{\\c&H%s&}(%s)", opts.color_muted, escape_ass(date)))
         end
 
@@ -437,7 +520,7 @@ local function render_dashboard()
         ass:pos(screen_w / 2, center_y - (5 * scale))
         ass:append(table.concat(artist_album_parts, "   •   "))
 
-        -- Line 4: Composer, Label, Encoder, ReplayGain
+        -- Line 4: Credits
         local credits = {}
         if composer ~= "" then table.insert(credits, "Comp: " .. composer) end
         if publisher ~= "" then table.insert(credits, "Label: " .. publisher) end
@@ -451,7 +534,7 @@ local function render_dashboard()
             ass:append(escape_ass(table.concat(credits, "   |   ")))
         end
 
-        -- Line 5: Source Specification Rack
+        -- Line 5: Source Specs
         local quality_tag = is_lossless and "LOSSLESS" or "LOSSY"
         local codec_desc = string.format("%s [%s]", codec:upper(), quality_tag)
         if container_name ~= "" and container_name ~= codec:upper() then
@@ -472,7 +555,7 @@ local function render_dashboard()
         ass:pos(screen_w / 2, center_y + (70 * scale))
         ass:append("[  " .. escape_ass(table.concat(source_specs, "   |   ")) .. "  ]")
 
-        -- Line 6: Output & Signal Path Verification Rack
+        -- Line 6: Signal Path
         local out_sr_str = out_sr > 0 and format_sample_rate(out_sr) or "DIRECT"
         local path_details = string.format("OUTPUT: %s (%s)   |   SIGNAL PATH: %s", ao_device, out_sr_str, signal_path_text)
 
@@ -488,15 +571,16 @@ end
 
 -- Synchronize playback state across playlist changes
 local function update_playback_state()
-    is_audio_active = is_audio_stream()
+    local media_type = get_media_type()
 
-    if is_audio_active then
+    if media_type == "audio" or media_type == "albumart" then
+        hud_visible = true  -- Default ON for music
         if opts.force_osc_always then
             mp.commandv("script-message", "osc-visibility", "always", "no-osd")
         end
-        hud_visible = true
         render_dashboard()
     else
+        hud_visible = false -- Default strictly OFF for moving videos & images
         clear_osd()
         mp.commandv("script-message", "osc-visibility", "auto", "no-osd")
     end
@@ -506,15 +590,31 @@ local function on_shutdown()
     clear_osd()
 end
 
--- Keybind toggle handler (manual show/hide via 'i')
+-- =========================================================================
+-- Script Messages & Keybinding Handlers
+-- =========================================================================
+
+-- Keybind toggle handler for Audio Studio HUD ('a')
 mp.register_script_message("toggle-audio-hud", function()
     hud_visible = not hud_visible
-    render_dashboard()
+    if hud_visible then
+        render_dashboard()
+    else
+        clear_osd()
+    end
 end)
 
--- Property observers and event listeners (Strictly event-driven, zero polling overhead)
+-- Keybind handlers for cycling and resetting Audio DSP ('A' and '0')
+mp.register_script_message("cycle-audio-dsp", cycle_audio_dsp)
+mp.register_script_message("reset-audio-dsp", reset_audio_dsp)
+
+-- =========================================================================
+-- Property Observers and Event Listeners
+-- =========================================================================
+
 mp.register_event("file-loaded", update_playback_state)
 mp.register_event("end-file", on_shutdown)
+mp.observe_property("current-tracks/video", "native", update_playback_state)
 mp.observe_property("metadata", "native", render_dashboard)
 mp.observe_property("audio-params", "native", render_dashboard)
 mp.observe_property("audio-out-params", "native", render_dashboard)
