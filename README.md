@@ -1,6 +1,6 @@
 # ⚡ mpv4all
 
-> **The definitive, battle-tested MPV configuration**: Direct3D 11 Flip presentation, AI-driven hardware upscaling (NVIDIA RTX VSR & True HDR), a top-tier neural shader suite (FSR, NIS, SGSR, CAS), an OLED-optimized image viewer, and a real-time audiophile studio HUD.
+> **The definitive, battle-tested MPV configuration**: Direct3D 11 Flip presentation, AI-driven hardware upscaling (NVIDIA RTX VSR & True HDR), a top-tier neural shader suite (FSR, NIS, SGSR, CAS), an OLED-optimized image viewer, a real-time audiophile studio HUD, and a fast hardware clip maker.
 
 ---
 
@@ -79,15 +79,19 @@ Opening still images (JPEG, PNG, WebP, AVIF, JXL, etc.) automatically triggers a
 
 ---
 
-### 6. Built-in WebM & Clip Creator (`webm.lua`)
-Press **`W` (Shift + W)** on any playing media to trigger an on-screen encoding and clipping toolkit:
-* **Visual Crop Area (`c`)**: Set crop points A and B interactively with mouse coordinates.
-* **In/Out Trimming (`1` / `2`)**: Define exact start/end points with preview jumping (`!`, `@`).
-* **Encode Options Menu (`o`)**:
-  * Formats: WebM (VP8/VP9), MP4 (x264, NVENC, AV1, HEVC), GIF (with Bayer/Sierra dither), MP3, or Raw AVI.
-  * Automatic 2-pass encoding with automatic VP8 logfile patching.
-  * Full control over target size (kB), CRF, bitrate constraints, FPS, and scale heights.
-* **Live Loop Preview (`p`)** & **Interactive Progress Indicator (`e`)**.
+### 6. Built-in Clip Maker (`clip-maker.lua`)
+Press **`W` (Shift + W)** on any playing media to trigger an on-screen, non-blocking trimming and encoding toolkit:
+* **Interactive Controls**:
+  * `1` / `2`: Set start and end markers.
+  * `Shift + 1` / `Shift + 2`: Jump directly to start and end points.
+  * `c`: Interactive mouse crop with visual darkening overlay.
+  * `p`: Live loop preview of your selection.
+  * `e`: Trigger asynchronous, non-blocking hardware encode (MPV never freezes).
+* **NVIDIA Hardware Acceleration & Safety**:
+  * High-speed hardware encoding for **H.264 NVENC**, **HEVC NVENC**, and **AV1 NVENC** (RTX 40+).
+  * Fully protected against 10-bit AV1/HDR container crashes via automatic pixel format downsampling to 8-bit YUV420p when targeting H.264.
+  * Automatic subtitle protection to prevent MP4 container muxing failures with ASS/SSA subtitles.
+  * Also supports WebM (VP9/VP8), CPU codecs (x264, x265, aom-av1), MP3 extraction, and palette-optimized GIFs.
 
 ---
 
@@ -113,10 +117,10 @@ Press **`W` (Shift + W)** on any playing media to trigger an on-screen encoding 
 | `a` | Toggle **Audiophile Studio HUD** on/off |
 | `A` *(Shift+A)* | Toggle **7.1 Surround Upmixer** |
 
-### Window, Playback & Navigation
+### Window, Playback & Tools
 | Key / Input | Action |
 | :---: | :--- |
-| `W` *(Shift+W)* | Launch the **WebM / Clip Maker** toolkit |
+| `W` *(Shift+W)* | Open the **Clip Maker** toolkit |
 | `F11` | Toggle Fullscreen |
 | `r` | Rotate video 90° clockwise |
 | `l` | Toggle file loop (`inf` / `no`) |
@@ -151,25 +155,3 @@ Press **`W` (Shift + W)** on any playing media to trigger an on-screen encoding 
 
 * MPV GLSL shader ports: **agyild** (*CAS, FSR, NIS, SGSR*).
 * Architected, assembled, and refined by **[askasys-code](https://github.com/askasys-code)** — powered by Vibe Coding and Feels.
-
-## 📂 Directory Layout
-
-```text
-mpv/
-├── mpv.conf                        # Main configuration (gpu-next, d3d11 flip, cache, subtitles)
-├── input.conf                      # Keybindings, shader triggers, and script messages
-├── fonts.conf                      # System fontconfig configuration
-├── configs/
-│   └── mpv_file_extensions.conf    # Conditional profiles for [VIDEO], [AUDIO], and [IMAGE]
-├── scalers/
-│   ├── CAS-scaled.glsl             # AMD FidelityFX CAS v1.0.2
-│   ├── FSR.glsl                    # AMD FidelityFX Super Resolution v1.0.2
-│   ├── NVScaler.glsl               # NVIDIA Image Scaling v1.0.2 (Compute Shader)
-│   └── SGSR.glsl                   # Qualcomm Snapdragon GSR v1
-└── scripts/
-    ├── audio-player.lua            # Audiophile HUD & Signal Path Monitor
-    ├── autohdr.lua                 # Smart RTX Video True HDR Controller
-    ├── autovsr.lua                 # Dynamic Resolution RTX VSR Auto-Scaler
-    └── webm.lua                    # Integrated WebM / MP4 / GIF Clip Maker
-
----
