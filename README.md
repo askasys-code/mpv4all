@@ -1,123 +1,155 @@
-# ⚡ mpv4all
+# 🎛️ mpv4all — NVIDIA Dark Glass Edition
 
-An elite, highly optimized configuration suite for [mpv](https://mpv.io) tailored for modern Windows 11 / Direct3D 11 environments, NVIDIA RTX hardware, high-refresh OLED displays, audiophile headphone listening, and high-resolution photo viewing.
+[![Engine](https://img.shields.io/badge/MPV-gpu--next-00E676?style=for-the-badge&logo=mpv&logoColor=white)](https://mpv.io)
+[![Backend](https://img.shields.io/badge/Direct3D_11-Native_Zero--Copy-00E5FF?style=for-the-badge&logo=windows&logoColor=white)](https://microsoft.com)
+[![AI Upscaling](https://img.shields.io/badge/RTX_Video-VSR_%7C_True_HDR-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://nvidia.com)
+[![Aesthetics](https://img.shields.io/badge/Design-NVIDIA_Dark_Glass-0A0A0A?style=for-the-badge&logo=materialdesign&logoColor=00E676)](#-the-nvidia-dark-glass-aesthetic)
 
----
-
-## Key Highlights & Architectural Features
-
-### 1. Cinema Frame Pacing (24 fps on 60 Hz – 240 Hz Displays)
-* **Zero Judder / Zero Dropped Frames**: Utilizes `video-sync=display-resample` to slave video presentation directly to the physical display VBlank, micro-adjusting audio clock by $\pm0.1\%$.
-* **`tscale=oversample`**: Eliminates 3:2 pulldown judder across 60 Hz, 120 Hz, 144 Hz, 165 Hz, and 240 Hz panels without introducing artificial frame interpolation ("soap opera effect") or motion blur.
-* **On-the-Fly Pacing Switch (`Shift + M`)**: Instant hotkey toggle between `display-resample` (best for fixed refresh rates) and `audio` clock (mandatory for G-Sync / FreeSync VRR).
-
-### 2. Video Pipeline & Rendering (`vo=gpu-next`)
-* **Direct3D 11 Flip Model**: `gpu-api=d3d11` paired with `d3d11-flip=yes` and native zero-copy `hwdec=d3d11va`.
-* **True OLED Blacks & Windows 11 HDR**: `target-colorspace-hint=yes` and `d3d11-output-csp=auto` ensure direct pass-through to the Windows Advanced Color swapchain, bypassing SDR double-tone-mapping.
-* **Modern libplacebo Clamping**: Ringing suppression via `scale-clamp=yes` and `cscale-clamp=yes`.
-* **Compute Dithering**: 16-pass `dither=error-diffusion` (`sierra-lite`) for banding-free dark gradients.
-
-### 3. Hardware AI & Neural Upscaling Suite
-* Direct one-key access to hardware AI tensor scalers and spatial GLSL algorithms:
-  * **1**: NVIDIA RTX Video Super Resolution (Hardware VSR via `d3d11vpp`).
-  * **2**: NVIDIA Image Scaling (NIS Spatial Upscaler).
-  * **3**: AMD FidelityFX Super Resolution (FSR 1.0: EASU + RCAS).
-  * **4**: Qualcomm Snapdragon Game Super Resolution (SGSR).
-  * **5**: AMD Contrast Adaptive Sharpening (CAS Scaled Reconstruction).
-  * **h**: NVIDIA RTX Video True HDR (Automated SDR $\rightarrow$ HDR tone-mapping).
-
-### 4. Integrated Audiophile HUD & Curated Headphone DSP
-* **Dual-Mode Studio HUD (`a`)**:
-  * *Floating Capsule*: Compact metadata and stream technicals for video playback and music with embedded artwork.
-  * *Studio Audio Rack*: Full-screen mastering display for pure audio playback (sample rate, bit depth, container, audio-device output, signal path).
-* **5-Stage Headphone DSP Suite (`Shift + A`)**:
-  Integrated directly inside `audio-player.lua` with clean, human-readable OSD notices:
-  1. **Windows Sonic 7.1 Spatial Upmix**: Expands 2.0 stereo into an 8-channel virtual soundstage, waking up Windows Sonic's 3D binaural room HRTF engine.
-  2. **BS2B Studio Crossfeed**: Bauer stereophonic-to-binaural algorithm simulating nearfield studio monitors to eliminate headphone ear fatigue.
-  3. **Stereo Soundstage Expander**: Widens horizontal acoustic stage while maintaining bit-perfect 2.0 channel architecture.
-  4. **Dialogue Boost & Night Mode**: Real-time dynamic audio normalization (`dynaudnorm`) lifting quiet dialogue while compressing loud explosions.
-  5. **Direct / Bit-Perfect (OFF)**: Pure, uncolored passthrough for audiophile listening.
-
-### 5. High-Performance Photo & Graphic Viewer
-* **Zero-Lag Zoom**: Fast `dither=fruit`, `correct-downscaling=no`, and `sigmoid-upscaling=no` active exclusively during image viewing for instant 144/240 Hz viewport response.
-* **Viewport Navigation**: Snappy zoom (`WHEEL`), 2D viewport panning (`Alt + Arrows`), one-click reset (`MBTN_MID` / `Backspace`), and folder navigation (`PGUP` / `PGDWN`).
-* **Non-Destructive Profiles**: Utilizes `profile-restore=copy` to prevent image viewer settings (`hwdec=no`, scalers) from corrupting subsequent video files in the playlist.
-
-### 6. Modern NVENC Hardware Clipper (`Shift + W`)
-* Integrated toolkit for on-the-fly video clipping, trimming, cropping, and encoding via NVENC (H.264, HEVC, AV1) or high-quality palette-generated GIFs.
+An ultra-refined, videophile-grade media environment engineered for Direct3D 11 and NVIDIA RTX architectures. Built on `vo=gpu-next`, this suite delivers zero-copy hardware acceleration, frame-perfect pacing for high-refresh displays, tensor-core AI upscaling, studio-grade multichannel audio monitoring, and an exclusive vector-rendered glassmorphism user interface.
 
 ---
 
-## Keybindings Cheat Sheet
+## 💎 The NVIDIA Dark Glass Aesthetic
 
-### Scalers & Video Enhancements
-| Key | Action | Description |
-| :--- | :--- | :--- |
-| `1` | `autovsr-toggle` | Toggle NVIDIA RTX Video Super Resolution (AI Tensor) |
-| `2` | NIS | Enable NVIDIA Image Scaling GLSL |
-| `3` | AMD FSR | Enable AMD FidelityFX Super Resolution (EASU + RCAS) |
-| `4` | Qualcomm SGSR | Enable Snapdragon Game Super Resolution |
-| `5` | AMD CAS | Enable AMD Contrast Adaptive Sharpening |
-| `h` | `autohdr-toggle` | Toggle NVIDIA RTX Video True HDR (SDR $\rightarrow$ HDR) |
-| `9` | Cycle Scaler | Switch base luma fallback between `lanczos` and `nearest` |
-| `d` | `cycle deband` | Toggle debanding algorithm |
-| `0` | **Master Reset** | Clears all shaders, VSR, True HDR, DSP filters, zoom, and restores default pacing |
-| `-` | Query Status | Display active GLSL shaders and current sync mode on OSD |
+Unlike standard media players with generic flat controls, this suite features a bespoke, unified design system rendered entirely via real-time vector ASS overlays:
 
-### Display & Motion Synchronization
-| Key | Action | Description |
-| :--- | :--- | :--- |
-| `Shift + M` | Toggle Pacing | Cycle between `display-resample` (Fixed 60–240Hz) and `audio` (G-Sync/VRR) |
-
-### Audio & Headphone DSP
-| Key | Action | Description |
-| :--- | :--- | :--- |
-| `a` | Toggle Audio HUD | Show/hide the floating capsule or studio mastering rack |
-| `Shift + A` | **Cycle Audio DSP** | Cycle: 7.1 Spatial Upmix $\rightarrow$ BS2B Crossfeed $\rightarrow$ Stereo Expander $\rightarrow$ Night Mode $\rightarrow$ Direct |
-| `Alt + A` | Audio Channels | Toggle output container between `auto-safe` and forced `7.1` |
-| `UP` / `DOWN` | Volume $\pm2$ | Adjust volume by 2% increments |
-| `m` | `cycle mute` | Toggle master mute |
-
-### Image Viewer & Viewport Navigation
-| Key | Action | Description |
-| :--- | :--- | :--- |
-| `WHEEL_UP` | Zoom In | Responsive 0.10 scale zoom |
-| `WHEEL_DOWN` | Zoom Out | Responsive 0.10 scale unzoom |
-| `MBTN_MID` / `Backspace` | Reset Geometry | Re-center image and reset zoom to 100% |
-| `Alt + Arrows` | Pan Viewport | Move around zoomed-in photos or videos |
-| `PGUP` / `PGDWN` | Browse Folder | Previous / Next image or file in folder |
-| `r` / `Shift + R` | Rotate | Rotate image 90° clockwise / 270° counter-clockwise |
-| `Alt + V` | Mirror Flip | Flip image horizontally |
-
-### Playback & Tools
-| Key | Action | Description |
-| :--- | :--- | :--- |
-| `SPACE` / `MBTN_RIGHT` | Pause / Play | Toggle playback pause |
-| `LEFT` / `RIGHT` | Seek $\pm5$s | Exact 5-second jump |
-| `Shift + LEFT/RIGHT` | Seek $\pm1$s | Precise 1-second frame step |
-| `.` / `,` | Frame Step | Advance / rewind single frame |
-| `f` / `F11` | Fullscreen | Toggle fullscreen mode |
-| `TAB` / `Shift + I` | Stats Display | Toggle detailed real-time render/performance stats |
-| `Shift + W` | Clip Maker | Open hardware video trimmer and encoder |
-| `s` / `Shift + S` | Screenshot | Capture screenshot with / without subtitles |
-| `q` / `ESC` | Quit | Exit player |
+* **Obsidian Glass Containers (`#0A0A0A` @ ~80% Opacity)**: Clean, translucent frosted backdrop cards that maintain readability over high-contrast video without obscuring content.
+* **Signature NVIDIA Green Accents (`#00E676`)**: Precision top accent borders, tactical progress indicators, and custom vector diamond badges (`◆`) for section hierarchy.
+* **RivaTuner Telemetry Cyan (`#00E5FF`)**: High-contrast, fatigue-free readouts for clocks, codecs, timestamps, and demuxer cache buffers.
+* **OLED Black Optimization**: Borderless pure black letterboxing (`#000000`) designed to turn off self-lit OLED pixels entirely.
+* **Dynamic DPI Vector Scaling**: Every font glyph, vector border, button hitbox, and layout coordinate scales responsively across 1080p, 1440p, 4K UHD, and ultra-wide displays.
 
 ---
 
-## Technical Details
+## ⚡ Core Engine & Video Architecture
 
-### Fixed Refresh Rate vs. G-Sync / VRR
-* **Fixed Refresh Monitors (60 Hz, 120 Hz, 144 Hz, 240 Hz)**: Keep `display-resample` active (default). mpv eliminates 3:2 pulldown judder via `interpolation=yes` + `tscale=oversample`, maintaining 100% film timing consistency.
-* **G-Sync / FreeSync (VRR Active)**: Press **`Shift + M`** to switch to `audio` clock. This prevents mpv's display resampler from fighting the GPU variable refresh rate controller.
-
-### Windows Sonic & The 7.1 Spatial Upmixer
-Standard stereo tracks (2.0) bypass Windows Sonic's 3D room engine by default. Selecting **`Audio DSP: Windows Sonic 7.1 Spatial Upmix`** (`Shift + A`) synthesizes an 8-channel matrix container, triggering Windows Sonic's HRTF engine to position virtual speakers in a 360° soundstage around your headphones. When listening to pure stereo music, cycle to **`Direct / Bit-Perfect (OFF)`** for unadulterated source reproduction.
+* **Modern Direct3D 11 Presentation**: Utilizes `vo=gpu-next` paired with native DXGI Flip presentation model (`d3d11-flip=yes`) and automatic swapchain color space detection for seamless SDR/HDR switching.
+* **Hardware Decoding**: Zero-copy `d3d11va` hardware decoding across all modern formats (AV1 10-bit, HEVC, H.264, VP9).
+* **Judder-Free Motion Pacing**: Audio-resampling display synchronization (`video-sync=display-resample` with `tscale=oversample`) eliminates 3:2 pulldown judder, providing cinematic motion smoothness on 60Hz through 240Hz+ VRR displays.
+* **Advanced Color Reconstruction**: High-order Bicubic and Lanczos scaling filters with tuned anti-ringing thresholds for authentic film grain and edge reproduction.
 
 ---
 
-## Requirements & Installation
-1. Install a modern 64-bit build of [mpv](https://sourceforge.net/projects/mpv-player-windows/files/) (v0.38+ recommended, built with `libplacebo` and `d3d11vpp`).
-2. Clone or copy these configuration folders into your mpv directory:
-   * Windows Portable: `<mpv-dir>/portable_config/`
-   * Windows Standard: `%APPDATA%/mpv/`
-3. Ensure your GPU drivers are up-to-date (NVIDIA Driver 530+ required for RTX VSR and True HDR).
+## 🚀 Neural Shaders & AI Upscaling Pipeline
+
+Switch seamlessly between hardware AI tensor upscalers and spatial reconstruction shaders on the fly:
+
+| Hotkey | Upscaler Engine | Processing Tier | Description |
+| :---: | :--- | :--- | :--- |
+| **`1`** | **NVIDIA RTX VSR** | Hardware Tensor AI | Deep-learning super resolution up to 4.0x via D3D11 video post-processing. |
+| **`2`** | **NVIDIA NIS** | Spatial Compute Shader | Direction-adaptive sharpening and linear upscaling engine. |
+| **`3`** | **AMD FSR 1.0** | Spatial Two-Pass Shader | Edge-Adaptive Super Sampling (EASU) + Robust Contrast-Adaptive Sharpening (RCAS). |
+| **`4`** | **Qualcomm SGSR** | Single-Pass Edge Shader | Direction-aware Lanczos reconstruction tuned for minimal power draw. |
+| **`5`** | **AMD CAS (Scaled)** | Contrast Reconstruction | Adaptive high-frequency luminance sharpening in linear light. |
+| **`h`** | **NVIDIA RTX True HDR** | Tensor Core Inverse Tone | Real-time SDR to HDR10 (PQ) conversion with native HDR override protection. |
+| **`0`** | **Master Reset** | Clean Fallback | Clears all active neural shaders, VSR, and HDR overrides back to clean native rendering. |
+
+---
+
+## 📊 The Diagnostic HUD Suite
+
+### 1. NVIDIA Hardware Monitor (`g`)
+Direct real-time hardware telemetry polled via non-blocking asynchronous calls:
+* **GPU Metrics**: Core clock, memory clock, GPU load, and dedicated NVDEC hardware decoder engine utilization.
+* **Thermal & Power**: Die temperature with dynamic thermal alerts, fan tachometers (including Fan Stop mode), real-time board power draw against TDP limits.
+* **VRAM Telemetry**: MiB-accurate VRAM utilization and total physical frame buffer capacity.
+* **Display Engine**: Physical display refresh rate, container framerate, dropped/mistimed frame counters, render latency in milliseconds, and OS Variable Refresh Rate (G-Sync) status.
+
+### 2. Video Diagnostics Monitor (`i` / `I`)
+Deep container, stream, and color science diagnostics:
+* Container metadata, physical file size, live demuxer cache duration, and RAM buffer occupancy.
+* Source video format, active hardware decoder, exact aspect ratio (SAR/DAR), and real-time scaling resolution indicators (e.g. `1080p -> 4K`).
+* Color science tracking: bit-depth, pixel format, active color primaries (`BT.709` vs `BT.2020 WCG`), and gamma transfer curves (`BT.1886`, `sRGB`, `HDR10 PQ`, `HLG`).
+
+### 3. Studio Audio Monitor (`a`)
+Audiophile and multichannel acoustic telemetry suite:
+* **Dynamic 7.1 Speaker Matrix**: Real-time physical channel activity grid (`FL`, `FR`, `C`, `LFE`, `SL`, `SR`, `BL`, `BR`).
+* **Hardware Acoustic Parameters**: Bit-perfect sample rates (e.g. `48.000 Hz`), audio bit-depth (`16-bit`, `24-bit`, `32-bit Float`), and real-time audio bitrates.
+* **A/V Sync Offset**: Millisecond-accurate audio/video synchronization drift tracking.
+* **Headphone DSP Suite (`A`)**: One-key cycle through 7.1 Spatial Upmixer, Bauer BS2B Binaural Crossfeed, Stereo Soundstage Widener, and Dynamic Night Mode.
+* **Zero-Clipping Bass Boost (`b`)**: Audiophile low-end equalizers with negative pre-attenuation headroom (`Warmth +4dB`, `Punch +7dB`, `Sub-Bass +10dB`).
+* **Channel Soloing (`B` / `Ctrl+1-5`)**: Isolate dialogue (Center), music score (Front L/R), surround effects, rear backs, or LFE subwoofer independently.
+
+---
+
+## 🎮 Modern Bottom Bar (OSC)
+
+A completely standalone, zero-lag on-screen controller engineered to replace mpv's default interface:
+
+* **Decoupled 60 FPS Render Loop**: Scrubbing and mouse tracking are fully decoupled from mpv's core event queue, eliminating drag latency, rubber-banding, or stuck sliders.
+* **RAM Cache Buffer Line**: Visual cyan buffer gauge displaying demuxer cache readahead in real time.
+* **Interactive Chapter Marks**: Subtle tick marks across the timeline with floating chapter title tooltips on hover.
+* **Dynamic Track Badges**: Bottom buttons adapt in real time to show the exact active channels (`[Stereo 2.0]`, `[5.1]`, `[7.1]`) and languages (`[ITA • 5.1]`).
+* **Multi-Audio & Multi-Subtitle Popups**: Clicking on the audio or subtitle badge opens a floating glass menu detailing codecs, channel setups, and language options.
+* **Clickable Volume Slider**: Left-click on the volume badge to toggle instant Mute, scroll with the mouse wheel, or click/drag directly on the dedicated volume bar to set levels from 0% to 100%.
+* **Guaranteed Auto-Hide**: Fades out cleanly after 2 seconds of mouse inactivity, even if the cursor is resting over the bar.
+
+---
+
+## 🎬 Hardware Clip Maker (`W`)
+
+A built-in video editor and converter powered by hardware NVENC:
+
+* **Lossless Precision Trimming**: Set frame-accurate Start (`1`) and End (`2`) markers with instant jump controls.
+* **Interactive Crop Selector (`c`)**: Dimmed viewport mask with mouse-driven cropping. All coordinates automatically snap to even dimensions to guarantee codec compliance.
+* **Hardware Exporters**: Export directly to NVENC AV1 (RTX 40-series), NVENC HEVC, NVENC H.264, VP9, CPU x264/x265, Palette-Generated High-Framerate GIF, or MP3.
+* **Asynchronous Encoding**: Subprocess encoding runs entirely in the background without freezing video playback.
+* **Smart UI Coordination**: Automatically silences the bottom controller while active, docking cleanly at the bottom-left beneath the video diagnostics monitor.
+
+---
+
+## ⌨️ Master Keybindings Cheat Sheet
+
+### Scaling, Shaders & Display
+| Key | Action |
+| :--- | :--- |
+| `1` | Toggle NVIDIA RTX Video Super Resolution (VSR) |
+| `2` | Set NVIDIA Image Scaling (NIS) |
+| `3` | Set AMD FidelityFX Super Resolution (FSR 1.0) |
+| `4` | Set Qualcomm Snapdragon Game Super Resolution (SGSR) |
+| `5` | Set AMD Contrast Adaptive Sharpening (CAS) |
+| `h` | Toggle NVIDIA RTX Video True HDR (SDR ➔ HDR) |
+| `d` | Toggle Debanding Filter |
+| `M` | Cycle Motion Sync (`display-resample` vs `audio` VRR clock) |
+| `0` | Master Reset (Clears shaders, VSR, HDR, audio DSP, and pans) |
+
+### Telemetry & Overlays
+| Key | Action |
+| :--- | :--- |
+| `TAB` | Synchronized Master Toggle (Opens/Closes HUDs together) |
+| `i` / `I` | Toggle Video & Container Diagnostics Monitor |
+| `g` | Toggle NVIDIA Hardware & GPU Telemetry Monitor |
+| `a` | Toggle Studio Audio Suite & Speaker Matrix |
+
+### Audio DSP, Equalizers & Soloing
+| Key | Action |
+| :--- | :--- |
+| `A` | Cycle Headphone DSP (Spatial Upmix ➔ BS2B ➔ Widener ➔ Nightmode ➔ Direct) |
+| `b` | Cycle Zero-Clipping Bass Boost (Off ➔ +4dB ➔ +7dB ➔ +10dB) |
+| `B` | Cycle Channel Solo (All ➔ Center ➔ Front ➔ Surrounds ➔ Rear ➔ LFE) |
+| `Ctrl+0` | Restore All Audio Channels |
+| `Ctrl+1` | Solo Front L/R Channels |
+| `Ctrl+2` | Solo Center Channel (Dialogue Isolation) |
+| `Ctrl+3` | Solo Surround Channels |
+| `Ctrl+4` | Solo Rear Back Channels |
+| `Ctrl+5` | Solo Subwoofer / LFE Channel |
+
+### Navigation, Image Viewing & Tools
+| Key | Action |
+| :--- | :--- |
+| `W` | Open Hardware Clip Maker |
+| `WHEEL_UP` / `DOWN` | Zoom In / Zoom Out (Smooth 0.10 steps) |
+| `MBTN_MID` / `BS` | Reset Zoom & Center Pan |
+| `Alt+Arrows` | Pan Viewport across zoomed videos / high-res photos |
+| `r` / `R` | Rotate 90° Clockwise / Counter-Clockwise |
+| `Alt+v` | Mirror Flip Horizontally |
+| `s` / `S` | Capture Screenshot / Clean Screenshot (Without Subtitles) |
+
+---
+
+## 📋 Compatibility
+
+* **OS**: Windows 10 / 11 (64-bit)
+* **Graphics**: NVIDIA GeForce GTX 900-series through RTX 40/50-series (RTX required for Tensor VSR & True HDR)
+* **Display**: Standard SDR Displays, Windows Advanced Color (WAC), HDR10 Displays, High-Refresh Gaming Monitors (60Hz – 360Hz+ G-Sync/VRR)
+* **Core Player**: MPV v0.38+ compiled with `libplacebo` and Direct3D 11 support
