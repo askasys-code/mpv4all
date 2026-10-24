@@ -1,4 +1,4 @@
-# 🎛️ MPV-RTX — NVIDIA Dark Glass Edition
+# 🎛️ MPV-RTX  (NVIDIA Dark Glass Edition)
 
 [![Engine](https://img.shields.io/badge/MPV-gpu--next-00E676?style=for-the-badge&logo=mpv&logoColor=white)](https://mpv.io)
 [![AI Upscaling](https://img.shields.io/badge/RTX_Video-VSR_%7C_True_HDR-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://nvidia.com)
