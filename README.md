@@ -1,7 +1,6 @@
 # 🎛️ mpv4all — NVIDIA Dark Glass Edition
 
 [![Engine](https://img.shields.io/badge/MPV-gpu--next-00E676?style=for-the-badge&logo=mpv&logoColor=white)](https://mpv.io)
-[![Backend](https://img.shields.io/badge/Direct3D_11-Native_Zero--Copy-00E5FF?style=for-the-badge&logo=windows&logoColor=white)](https://microsoft.com)
 [![AI Upscaling](https://img.shields.io/badge/RTX_Video-VSR_%7C_True_HDR-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://nvidia.com)
 [![Aesthetics](https://img.shields.io/badge/Design-NVIDIA_Dark_Glass-0A0A0A?style=for-the-badge&logo=materialdesign&logoColor=00E676)](#-the-nvidia-dark-glass-aesthetic)
 
