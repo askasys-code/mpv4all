@@ -1,6 +1,7 @@
 -- =========================================================================
--- MPV Clip Maker (Modern NVENC & Hardware Edition)
+-- MPV Clip Maker (NVIDIA Suite Unified Edition)
 -- Fast Clipping, Trimming & Encoding (AV1 / HEVC / H.264 / GIF)
+-- High-Performance ASS Vector HUD & Standalone Portable Engine
 -- =========================================================================
 
 local mp = require("mp")
@@ -31,16 +32,32 @@ local options = {
     output_format = "avc-nvenc",        -- avc-nvenc | hevc-nvenc | av1-nvenc | webm-vp9 | avc | hevc | av1 | gif | mp3 | raw
     nvenc_preset = "p4",                -- p1 (fastest) to p7 (slowest). p4/p5/p6 recommended
     
-    -- UI
-    font_size = 22,
-    margin = 14,
+    -- UI Styling (Matches nvidia-monitor, sound-monitor & video-monitor)
+    ui_scale = 1.35,                    -- User size multiplier (1.0 = normal, 1.35 = 4K recommended, 1.6 = TV)
+    font_face = "Segoe UI",
     message_duration = 4,
     gif_dither = 2                      -- 0-5 for bayer, 6 for sierra2_4a
 }
 
 mpopts.read_options(options, "clip_maker")
 
+-- Visual Palette & Theme Configuration (Identical to Suite Monitors)
+local cfg = {
+    ui_scale        = options.ui_scale or 1.35,
+    font_face       = options.font_face or "Segoe UI",
+    color_green     = "00E676",         -- NVIDIA Green (Headers, Titles & Confirm)
+    color_cyan      = "00E5FF",         -- RivaTuner Cyan (Values & Active Selections)
+    color_yellow    = "00C8FF",         -- Amber Warning (Durations & Secondary Keys)
+    color_red       = "3B3BFF",         -- Critical Red (Cancel / Abort)
+    color_white     = "FFFFFF",
+    color_gray      = "9E9E9E",         -- Descriptions & Inactive
+    color_dark_box  = "1C1C1C",
+    bg_alpha        = "35",             -- Glass box transparency (~80% dark)
+}
+
+local overlay = mp.create_osd_overlay("ass-events")
 local is_encoding = false
+local active_page_count = 0
 
 -- =========================================================================
 -- Helper Utilities
@@ -51,14 +68,25 @@ local function bold(text)
 end
 
 local function message(text, duration)
-    local ass = mp.get_property_osd("osd-ass-cc/0") or ""
-    mp.osd_message(ass .. text, duration or options.message_duration)
+    mp.osd_message(text, duration or options.message_duration)
 end
 
 local function file_exists(path)
     if not path or path == "" then return false end
     local info, _ = utils.file_info(path)
     return info ~= nil
+end
+
+-- Resolve the mpv binary path dynamically for portable installations
+local function get_mpv_binary()
+    local exe_dir = mp.command_native({"expand-path", "~~exe_dir/"})
+    if exe_dir and exe_dir ~= "" then
+        local exe_win = utils.join_path(exe_dir, "mpv.exe")
+        if file_exists(exe_win) then return exe_win end
+        local exe_unix = utils.join_path(exe_dir, "mpv")
+        if file_exists(exe_unix) then return exe_unix end
+    end
+    return "mpv"
 end
 
 local function format_time(seconds, no_ms, full)
@@ -82,6 +110,12 @@ local function parse_directory(dir)
     if not dir or dir == "" then return "" end
     local home = os.getenv("USERPROFILE") or os.getenv("HOME") or ""
     return (dir:gsub("^~", home))
+end
+
+local function truncate_string(str, max_len)
+    if not str then return "" end
+    if #str > max_len then return str:sub(1, max_len - 3) .. "..." end
+    return str
 end
 
 -- =========================================================================
@@ -317,26 +351,35 @@ formats["gif"] = create_format({
     audioCodec = "",
     outputExtension = "gif",
     acceptsBitrate = false,
-    postCommandModifier = function(_, cmd, _, start_t, end_t)
+    postCommandModifier = function(_, cmd)
         local new_cmd = {}
-        local start_ts = format_time(start_t, false, true):gsub(":", "\\\\:")
-        local end_ts = format_time(end_t, false, true):gsub(":", "\\\\:")
-        local cfilter = "[vid1]trim=start=" .. start_ts .. ":end=" .. end_ts .. "[vidtmp];"
-        
+        local lavfi_filters = {}
+
         for _, v in ipairs(cmd) do
             if v:match("^%-%-vf%-add=lavfi%-") or v:match("^%-%-vf%-add=fps") then
                 local n = v:gsub("^%-%-vf%-add=", ""):gsub("^lavfi%-", "")
-                cfilter = cfilter .. "[vidtmp]" .. n .. "[vidtmp];"
+                table.insert(lavfi_filters, n)
             elseif not v:match("^%-%-deinterlace=") then
                 table.insert(new_cmd, v)
             end
         end
 
-        cfilter = cfilter .. "[vidtmp]split[topal][vidf];[topal]palettegen=stats_mode=diff[pal];[vidf][pal]paletteuse=diff_mode=rectangle"
+        local cfilter = ""
+        local current_node = "[vid1]"
+        if #lavfi_filters > 0 then
+            for idx, flt in ipairs(lavfi_filters) do
+                local next_node = "[v" .. tostring(idx) .. "]"
+                cfilter = cfilter .. current_node .. flt .. next_node .. ";"
+                current_node = next_node
+            end
+        end
+
+        cfilter = cfilter .. current_node .. "split[topal][vidf];[topal]palettegen=stats_mode=diff[pal];[vidf][pal]paletteuse=diff_mode=rectangle"
         if options.gif_dither ~= 6 then
             cfilter = cfilter .. ":dither=bayer:bayer_scale=" .. tostring(options.gif_dither)
         end
         cfilter = cfilter .. "[vo]"
+
         table.insert(new_cmd, "--lavfi-complex=" .. cfilter)
         return new_cmd
     end
@@ -373,13 +416,161 @@ local format_keys = {
 }
 
 -- =========================================================================
--- UI Framework & Pages
+-- Unified ASS Glass Card Rendering Engine
+-- Placed at Bottom-Left, cleanly docked beneath video-monitor without overlap
 -- =========================================================================
 
-local function get_scale_factor()
-    local _, osd_h = mp.get_osd_size()
-    return math.max(0.65, (osd_h or 720) / 720)
+local function render_glass_card(params)
+    local d = mp.get_property_native("osd-dimensions")
+    if not d or d.w == 0 or d.h == 0 then return end
+
+    overlay.res_x = d.w
+    overlay.res_y = d.h
+
+    local base_scale = math.max(1.0, d.h / 1080)
+    local scale = base_scale * (cfg.ui_scale or 1.0)
+
+    local title_size    = math.floor(13 * scale)
+    local subtitle_size = math.floor(11.5 * scale)
+    local section_size  = math.floor(10.5 * scale)
+    local row_size      = math.floor(11.5 * scale)
+
+    local row_step      = math.floor(19.5 * scale)
+    local section_step  = math.floor(18 * scale)
+    local section_gap   = math.floor(10 * scale)
+
+    local top_pad       = math.floor(16 * scale)
+    local header_gap    = math.floor(8 * scale)
+    local bottom_pad    = math.floor(20 * scale)
+    local pad_x         = math.floor(18 * scale)
+    local indent_x      = math.floor(8 * scale)
+
+    local sections = params.sections or {}
+    local total_rows = 0
+    for _, sec in ipairs(sections) do
+        total_rows = total_rows + #sec.items
+    end
+
+    local header_h = title_size + subtitle_size + math.floor(8 * scale)
+    local sections_h = (#sections * section_step) + (math.max(0, #sections - 1) * section_gap) + (total_rows * row_step)
+    local box_h = top_pad + header_h + header_gap + sections_h + bottom_pad
+    
+    -- Exactly 400px * scale (Matches video-monitor.lua column width 1:1)
+    local box_w = math.floor((params.width or 400) * scale)
+
+    -- Anchor to Bottom-Left corner, perfectly sharing the horizontal column with video-monitor
+    local margin_x = math.floor(24 * scale)
+    local margin_y = math.floor(24 * scale)
+    local x1 = margin_x
+    local x2 = x1 + box_w
+    local y2 = d.h - margin_y
+    local y1 = y2 - box_h
+
+    -- Safety check: ensure card never clips above top boundary
+    if y1 < margin_y then
+        y1 = margin_y
+        y2 = y1 + box_h
+    end
+
+    local ass = assdraw.ass_new()
+
+    -- 0. Optional Backdrop Mask (Used by Crop Page)
+    if params.extra_draw then
+        params.extra_draw(ass, d, scale)
+    end
+
+    -- 1. Outer Translucent Rounded Glass Container
+    ass:new_event()
+    ass:append(string.format("{\\an7\\bord0\\shad0\\c&H0A0A0A&\\alpha&H%s&}", cfg.bg_alpha))
+    ass:pos(0, 0)
+    ass:draw_start()
+    ass:round_rect_cw(x1, y1, x2, y2, 8 * scale)
+    ass:draw_stop()
+
+    -- 2. Top Accent Border (NVIDIA Green)
+    ass:new_event()
+    ass:append(string.format("{\\an7\\bord0\\shad0\\c&H%s&\\alpha&H10&}", cfg.color_green))
+    ass:pos(0, 0)
+    ass:draw_start()
+    ass:rect_cw(x1, y1, x2, y1 + math.max(2, math.floor(2.5 * scale)))
+    ass:draw_stop()
+
+    -- 3. Header Title & Subtitle
+    local cur_y = y1 + top_pad
+    ass:new_event()
+    ass:append(string.format("{\\an7\\pos(%d,%d)\\fn%s\\b1\\fs%d\\c&H%s&\\bord1\\3c&H000000&\\shad1}%s", 
+        x1 + pad_x, cur_y, cfg.font_face, title_size, cfg.color_green, params.title or "CLIP MAKER"))
+
+    cur_y = cur_y + title_size + math.floor(4 * scale)
+    ass:new_event()
+    ass:append(string.format("{\\an7\\pos(%d,%d)\\fn%s\\b1\\fs%d\\c&H%s&\\bord1\\3c&H000000&\\shad1}%s", 
+        x1 + pad_x, cur_y, cfg.font_face, subtitle_size, cfg.color_white, truncate_string(params.subtitle or "", 38)))
+
+    -- Subtle Horizontal Divider
+    cur_y = cur_y + subtitle_size + math.floor(8 * scale)
+    ass:new_event()
+    ass:append("{\\an7\\bord0\\shad0\\c&HFFFFFF&\\alpha&HD0&}")
+    ass:pos(0, 0)
+    ass:draw_start()
+    ass:rect_cw(x1 + pad_x, cur_y, x2 - pad_x, cur_y + 1)
+    ass:draw_stop()
+
+    cur_y = cur_y + math.floor(8 * scale)
+
+    -- 4. Render Categorized Sections with Vector Diamond Headers
+    local d_rad = math.max(3, math.floor(3.5 * scale))
+    for s_idx, sec in ipairs(sections) do
+        local d_cx = x1 + pad_x + d_rad
+        local d_cy = cur_y + math.floor(section_size * 0.52)
+        local text_x = x1 + pad_x + (d_rad * 2) + math.floor(6 * scale)
+
+        -- Section Header Vector Diamond Icon
+        ass:new_event()
+        ass:append(string.format("{\\an7\\bord0\\shad0\\c&H%s&}", sec.title_color or cfg.color_green))
+        ass:pos(0, 0)
+        ass:draw_start()
+        ass:move_to(d_cx, d_cy - d_rad)
+        ass:line_to(d_cx + d_rad, d_cy)
+        ass:line_to(d_cx, d_cy + d_rad)
+        ass:line_to(d_cx - d_rad, d_cy)
+        ass:draw_stop()
+
+        -- Section Header Title Tag
+        ass:new_event()
+        ass:append(string.format("{\\an7\\pos(%d,%d)\\fn%s\\b1\\fs%d\\c&H%s&\\bord1\\3c&H000000&\\shad1}%s", 
+            text_x, cur_y, cfg.font_face, section_size, sec.title_color or cfg.color_green, sec.title))
+
+        cur_y = cur_y + section_step
+
+        -- Section Item Rows
+        for _, item in ipairs(sec.items) do
+            local label, val_text, val_color = item[1], item[2], item[3]
+
+            -- Label (Left-aligned + Indented: \an7)
+            ass:new_event()
+            ass:append(string.format("{\\an7\\pos(%d,%d)\\fn%s\\b0\\fs%d\\c&H%s&\\bord1\\3c&H000000&\\shad1}%s", 
+                x1 + pad_x + indent_x, cur_y, cfg.font_face, row_size, cfg.color_gray, label))
+
+            -- Value (Right-aligned: \an9)
+            ass:new_event()
+            ass:append(string.format("{\\an9\\pos(%d,%d)\\fn%s\\b1\\fs%d\\c&H%s&\\bord1\\3c&H000000&\\shad1}%s", 
+                x2 - pad_x, cur_y, cfg.font_face, row_size, val_color or cfg.color_white, val_text))
+
+            cur_y = cur_y + row_step
+        end
+
+        if s_idx < #sections then
+            cur_y = cur_y + section_gap
+        end
+    end
+
+    overlay.data = ass.text
+    overlay:update()
 end
+
+-- =========================================================================
+-- Page Abstraction & Inter-Script State Synchronization
+-- =========================================================================
 
 local Page = {}
 Page.__index = Page
@@ -400,24 +591,15 @@ function Page:remove_keybinds()
     end
 end
 
-function Page:setup_text(ass)
-    local scale = get_scale_factor()
-    local m = math.floor(options.margin * scale)
-    ass:append("{\\an7}")
-    ass:pos(m, m)
-    ass:append("{\\fnSegoe UI\\b0\\fs" .. tostring(math.floor(options.font_size * scale)) .. "\\bord1.5\\3c&H000000&\\shad1}")
-end
-
-function Page:clear()
-    local w, h = mp.get_osd_size()
-    if w and h then mp.set_osd_ass(w, h, "") end
-end
-
 function Page:show()
     if self.visible then return end
     self.visible = true
+    active_page_count = active_page_count + 1
+    
+    -- Notify other scripts (e.g. bottom bar) that Clip Maker is active
+    mp.set_property_native("user-data/clip-maker-active", true)
+
     self:add_keybinds()
-    self:clear()
     self:draw()
 end
 
@@ -425,7 +607,15 @@ function Page:hide()
     if not self.visible then return end
     self.visible = false
     self:remove_keybinds()
-    self:clear()
+    active_page_count = math.max(0, active_page_count - 1)
+
+    -- Debounced release: prevents microsecond state flickering between page transitions
+    mp.add_timeout(0.05, function()
+        if active_page_count == 0 then
+            mp.set_property_native("user-data/clip-maker-active", false)
+            overlay:remove()
+        end
+    end)
 end
 
 -- =========================================================================
@@ -493,34 +683,55 @@ function CropPage:confirm()
 end
 
 function CropPage:draw()
-    local w, h = mp.get_osd_size()
     local d = get_video_dimensions()
-    if not w or not d then return end
+    if not d then return end
 
-    local ass = assdraw.ass_new()
     local r = Region.new()
     r:set_from_points(self.pointA:to_screen(), self.pointB:to_screen())
 
-    ass:new_event()
-    ass:append("{\\an7\\bord0\\shad0\\c&H000000&\\alpha&H77&}")
-    ass:pos(0, 0)
-    ass:draw_start()
-    ass:rect_cw(d.top_left.x, d.top_left.y, r.x, r.y + r.h)
-    ass:rect_cw(r.x, d.top_left.y, d.bottom_right.x, r.y)
-    ass:rect_cw(d.top_left.x, r.y + r.h, r.x + r.w, d.bottom_right.y)
-    ass:rect_cw(r.x + r.w, r.y, d.bottom_right.x, d.bottom_right.y)
-    ass:draw_stop()
+    local rw = math.abs(self.pointA.x - self.pointB.x)
+    local rh = math.abs(self.pointA.y - self.pointB.y)
+    local ar_str = rh > 0 and string.format("%.2f:1", rw / rh) or "N/A"
 
-    ass:new_event()
-    self:setup_text(ass)
-    ass:append("{\\b1\\c&H00D7FF&}Crop Region{\\b0\\c&HFFFFFF&}\\N\\N")
-    ass:append(bold("1: ") .. "Set Top-Left (" .. self.pointA.x .. ", " .. self.pointA.y .. ")\\N")
-    ass:append(bold("2: ") .. "Set Bottom-Right (" .. self.pointB.x .. ", " .. self.pointB.y .. ")\\N")
-    ass:append(bold("r: ") .. "Reset Fullscreen\\N")
-    ass:append(bold("ESC: ") .. "Cancel\\N")
-    ass:append("{\\b1\\c&H78C850&}ENTER: Confirm (" .. math.abs(self.pointA.x - self.pointB.x) .. "x" .. math.abs(self.pointA.y - self.pointB.y) .. "){\\b0\\c&HFFFFFF&}\\N")
+    local sections = {
+        {
+            title = "COORDINATES",
+            title_color = cfg.color_green,
+            items = {
+                { "[1] Top-Left", string.format("%d, %d", self.pointA.x, self.pointA.y), cfg.color_cyan },
+                { "[2] Bottom-Right", string.format("%d, %d", self.pointB.x, self.pointB.y), cfg.color_cyan },
+                { "Resolution", string.format("%dx%d (%s)", rw, rh, ar_str), cfg.color_yellow }
+            }
+        },
+        {
+            title = "CONTROLS",
+            title_color = cfg.color_green,
+            items = {
+                { "[r] Reset", "Fullscreen", cfg.color_white },
+                { "[ENTER] Apply", "Confirm Region", cfg.color_green },
+                { "[ESC] Cancel", "Abort Selection", cfg.color_red }
+            }
+        }
+    }
 
-    mp.set_osd_ass(w, h, ass.text)
+    render_glass_card({
+        title = "CROP REGION SELECTOR",
+        subtitle = "Interactive Geometry Cutter",
+        width = 400,
+        sections = sections,
+        extra_draw = function(ass)
+            -- Draw perimeter shadow mask outside crop box
+            ass:new_event()
+            ass:append("{\\an7\\bord0\\shad0\\c&H000000&\\alpha&H77&}")
+            ass:pos(0, 0)
+            ass:draw_start()
+            ass:rect_cw(d.top_left.x, d.top_left.y, r.x, r.y + r.h)
+            ass:rect_cw(r.x, d.top_left.y, d.bottom_right.x, r.y)
+            ass:rect_cw(d.top_left.x, r.y + r.h, r.x + r.w, d.bottom_right.y)
+            ass:rect_cw(r.x + r.w, r.y, d.bottom_right.x, d.bottom_right.y)
+            ass:draw_stop()
+        end
+    })
 end
 
 -- =========================================================================
@@ -530,12 +741,12 @@ end
 local OptionItem = {}
 OptionItem.__index = OptionItem
 
-function OptionItem.new(optType, text, value, cfg, visible_fn)
+function OptionItem.new(optType, text, value, item_cfg, visible_fn)
     return setmetatable({
         optType = optType,
         text = text,
         value = value,
-        cfg = cfg or {},
+        cfg = item_cfg or {},
         visible_fn = visible_fn or function() return true end
     }, OptionItem)
 end
@@ -574,7 +785,7 @@ end
 
 function OptionItem:get_display()
     if self.optType == "bool" then
-        return self.value and "{\\c&H78C850&}Yes{\\c&HFFFFFF&}" or "{\\c&H5050C8&}No{\\c&HFFFFFF&}"
+        return self.value and "YES" or "NO"
     elseif self.optType == "int" then
         if self.cfg.labels and self.cfg.labels[self.value] then
             return self.cfg.labels[self.value]
@@ -637,7 +848,7 @@ function OptionsPage.new(callback)
             return formats[options.output_format].isNvenc
         end) },
         { "target_filesize", OptionItem.new("int", "Target Filesize", options.target_filesize, { step = 2500, min = 0, labels = { [0] = "Constant Quality (CQ Mode)" } }) },
-        { "crf", OptionItem.new("int", "CQ / QP Quality (Lower = Better)", options.crf, { step = 1, min = 0, max = 51 }) },
+        { "crf", OptionItem.new("int", "CQ / QP Quality", options.crf, { step = 1, min = 0, max = 51 }) },
         { "scale_height", OptionItem.new("list", "Scale Output Height", options.scale_height, { values = scale_opts }) },
         { "fps", OptionItem.new("list", "Framerate", options.fps, { values = fps_opts }) }
     }
@@ -697,26 +908,40 @@ function OptionsPage:cancel()
 end
 
 function OptionsPage:draw()
-    local w, h = mp.get_osd_size()
-    if not w then return end
-
-    local ass = assdraw.ass_new()
-    ass:new_event()
-    self:setup_text(ass)
-    ass:append("{\\b1\\c&H00D7FF&}Clip Maker — Options{\\b0\\c&HFFFFFF&}\\N\\N")
-
+    local param_items = {}
     for i, item in ipairs(self.items) do
         local opt = item[2]
         if opt.visible_fn() then
-            local is_sel = self.selected == i
-            local prefix = is_sel and "{\\b1\\c&H00D7FF&}▶ " or "   "
-            local label_color = is_sel and "{\\c&HFFFFFF&}" or "{\\c&HD0D0D0&}"
-            ass:append(prefix .. label_color .. opt.text .. ": {\\b1}" .. opt:get_display() .. "{\\b0\\c&HFFFFFF&}\\N")
+            local is_sel = (self.selected == i)
+            local prefix = is_sel and "▶ " or "   "
+            local label_str = prefix .. opt.text
+            local val_text = opt:get_display()
+            local val_color = is_sel and cfg.color_cyan or cfg.color_white
+            if opt.optType == "bool" then
+                val_color = opt.value and cfg.color_green or cfg.color_yellow
+            end
+            table.insert(param_items, { label_str, val_text, val_color })
         end
     end
 
-    ass:append("\\N{\\c&H888888&}▲ / ▼: Navigate  |  ◀ / ▶: Change  |  ENTER: Save  |  ESC: Cancel{\\c&HFFFFFF&}\\N")
-    mp.set_osd_ass(w, h, ass.text)
+    local nav_items = {
+        { "Navigate (▲ / ▼)", "Select Parameter", cfg.color_gray },
+        { "Adjust (◀ / ▶)", "Change Value", cfg.color_cyan },
+        { "[ENTER] Save", "Apply & Return", cfg.color_green },
+        { "[ESC] Cancel", "Discard Changes", cfg.color_red }
+    }
+
+    local sections = {
+        { title = "PARAMETERS", title_color = cfg.color_green, items = param_items },
+        { title = "NAVIGATION", title_color = cfg.color_green, items = nav_items }
+    }
+
+    render_glass_card({
+        title = "CLIP MAKER OPTIONS",
+        subtitle = "Encoder, Quality & Resolution Settings",
+        width = 400,
+        sections = sections
+    })
 end
 
 -- =========================================================================
@@ -746,13 +971,17 @@ function PreviewPage:start()
     local vf = mp.get_property_native("vf") or {}
     table.insert(vf, { name = "sub" })
     if self.region and self.region:is_valid() then
+        local rw = self.region.w - (self.region.w % 2)
+        local rh = self.region.h - (self.region.h % 2)
+        local rx = self.region.x - (self.region.x % 2)
+        local ry = self.region.y - (self.region.y % 2)
         table.insert(vf, {
             name = "crop",
             params = {
-                w = tostring(self.region.w),
-                h = tostring(self.region.h),
-                x = tostring(self.region.x),
-                y = tostring(self.region.y)
+                w = tostring(rw),
+                h = tostring(rh),
+                x = tostring(rx),
+                y = tostring(ry)
             }
         })
     end
@@ -777,13 +1006,34 @@ function PreviewPage:stop()
 end
 
 function PreviewPage:draw()
-    local w, h = mp.get_osd_size()
-    local ass = assdraw.ass_new()
-    ass:new_event()
-    self:setup_text(ass)
-    ass:append("{\\b1\\c&H78C850&}Previewing Clip (Loop){\\b0\\c&HFFFFFF&}\\N")
-    ass:append("Press " .. bold("ESC") .. " or " .. bold("p") .. " to exit preview.\\N")
-    mp.set_osd_ass(w, h, ass.text)
+    local dur = (self.start_t >= 0 and self.end_t > self.start_t) and string.format("%.2fs", self.end_t - self.start_t) or "--"
+    local crop_desc = (self.region and self.region:is_valid()) and string.format("%dx%d", self.region.w, self.region.h) or "Fullscreen"
+
+    local sections = {
+        {
+            title = "PLAYBACK DETAILS",
+            title_color = cfg.color_green,
+            items = {
+                { "Timeline Range", string.format("%s -> %s", format_time(self.start_t), format_time(self.end_t)), cfg.color_cyan },
+                { "Active Duration", dur, cfg.color_yellow },
+                { "Crop Geometry", crop_desc, cfg.color_white }
+            }
+        },
+        {
+            title = "CONTROLS",
+            title_color = cfg.color_green,
+            items = {
+                { "[p] / [ESC]", "Exit Loop Preview", cfg.color_yellow }
+            }
+        }
+    }
+
+    render_glass_card({
+        title = "CLIP PREVIEW (LOOP)",
+        subtitle = "Active Viewport Audition",
+        width = 400,
+        sections = sections
+    })
 end
 
 -- =========================================================================
@@ -857,31 +1107,52 @@ function MainPage:preview()
 end
 
 function MainPage:draw()
-    local w, h = mp.get_osd_size()
-    if not w then return end
-
     local start_str = self.startTime >= 0 and format_time(self.startTime) or "Not Set"
     local end_str = self.endTime >= 0 and format_time(self.endTime) or "Not Set"
     local diff_str = (self.startTime >= 0 and self.endTime > self.startTime) and string.format("%.2fs", self.endTime - self.startTime) or "--"
     local fmt = formats[options.output_format]
 
-    local ass = assdraw.ass_new()
-    ass:new_event()
-    self:setup_text(ass)
-    ass:append("{\\b1\\c&H00D7FF&}Clip Maker{\\b0\\c&HFFFFFF&}\\N\\N")
-    ass:append(bold("1: ") .. "Set Start Time (" .. start_str .. ")  |  " .. bold("Start: ") .. "Jump\\N")
-    ass:append(bold("2: ") .. "Set End Time   (" .. end_str .. ")  |  " .. bold("End: ") .. "Jump\\N")
-    ass:append("Duration: {\\b1\\c&H78C850&}" .. diff_str .. "{\\b0\\c&HFFFFFF&}\\N\\N")
+    local crop_desc = self.region:is_valid() and string.format("%dx%d", self.region.w, self.region.h) or "Fullscreen"
+    local media_name = mp.get_property("media-title") or mp.get_property("filename/no-ext") or "Active Media Stream"
 
-    local crop_desc = self.region:is_valid() and (self.region.w .. "x" .. self.region.h .. " at (" .. self.region.x .. "," .. self.region.y .. ")") or "Fullscreen"
-    ass:append(bold("c: ") .. "Crop Region: {\\c&HD0D0D0&}" .. crop_desc .. "{\\c&HFFFFFF&}\\N")
-    ass:append(bold("o: ") .. "Format: {\\b1\\c&H3BB0FF&}" .. fmt.displayName .. "{\\b0\\c&HFFFFFF&}\\N\\N")
+    local rate_desc = options.target_filesize > 0 and string.format("%d kB Target", options.target_filesize) or string.format("CQ / CRF %d", options.crf)
 
-    ass:append(bold("p: ") .. "Loop Preview\\N")
-    ass:append("{\\b1\\c&H78C850&}" .. bold("e: ") .. "Start Encode{\\b0\\c&HFFFFFF&}\\N\\N")
-    ass:append("{\\c&H888888&}" .. bold("ESC: ") .. "Close Toolkit{\\c&HFFFFFF&}\\N")
+    local sections = {
+        {
+            title = "TIMELINE",
+            title_color = cfg.color_green,
+            items = {
+                { "[1] Start Marker", start_str .. "  [! Jump]", self.startTime >= 0 and cfg.color_cyan or cfg.color_gray },
+                { "[2] End Marker", end_str .. "  [@ Jump]", self.endTime >= 0 and cfg.color_cyan or cfg.color_gray },
+                { "Duration", diff_str, (self.startTime >= 0 and self.endTime > self.startTime) and cfg.color_yellow or cfg.color_gray }
+            }
+        },
+        {
+            title = "CONFIGURATION",
+            title_color = cfg.color_green,
+            items = {
+                { "[c] Crop Frame", crop_desc, self.region:is_valid() and cfg.color_green or cfg.color_white },
+                { "[o] Encoder Format", fmt.displayName, cfg.color_cyan },
+                { "Quality Rate", rate_desc, cfg.color_white }
+            }
+        },
+        {
+            title = "EXECUTION",
+            title_color = cfg.color_green,
+            items = {
+                { "[p] Loop Preview", "In-Player Playback", cfg.color_yellow },
+                { "[e] Start Encode", "Launch Process", cfg.color_green },
+                { "[ESC] Exit", "Close Clip Maker", cfg.color_gray }
+            }
+        }
+    }
 
-    mp.set_osd_ass(w, h, ass.text)
+    render_glass_card({
+        title = "CLIP MAKER",
+        subtitle = media_name,
+        width = 400,
+        sections = sections
+    })
 end
 
 -- =========================================================================
@@ -944,9 +1215,9 @@ function MainPage:start_encode()
     local out_path = generate_output_path(self.startTime, self.endTime, fmt)
     local duration = self.endTime - self.startTime
 
-    -- Base command isolated from playback display filters & hwdec conflicts
+    -- Base command using dynamic portable binary resolution
     local cmd = {
-        "mpv",
+        get_mpv_binary(),
         path,
         "--start=" .. format_time(self.startTime, false, true),
         "--end=" .. format_time(self.endTime, false, true),
@@ -978,11 +1249,13 @@ function MainPage:start_encode()
     end
 
     -- Subtitle handling: burn if requested, otherwise strictly suppress raw muxing
-    -- (Prevents MP4 muxer crash with embedded ASS subtitles)
-    if options.burn_subtitles and mp.get_property_bool("sub-visibility", true) then
+    local current_sid = mp.get_property("sid")
+    if options.burn_subtitles and mp.get_property_bool("sub-visibility", true) and current_sid and current_sid ~= "no" then
         table.insert(vf, "sub")
+        table.insert(cmd, "--sid=" .. tostring(current_sid))
+    else
+        table.insert(cmd, "--sid=no")
     end
-    table.insert(cmd, "--sid=no")
 
     -- Sanitize playback filters (strip d3d11vpp, VSR, and True HDR hardware filters)
     if options.apply_current_filters then
@@ -997,12 +1270,18 @@ function MainPage:start_encode()
         end
     end
 
+    -- Force even dimensions to prevent NVENC/x264 "width/height not divisible by 2" errors
     if self.region:is_valid() then
-        table.insert(vf, string.format("lavfi-crop=%d:%d:%d:%d", self.region.w, self.region.h, self.region.x, self.region.y))
+        local rw = self.region.w - (self.region.w % 2)
+        local rh = self.region.h - (self.region.h % 2)
+        local rx = self.region.x - (self.region.x % 2)
+        local ry = self.region.y - (self.region.y % 2)
+        table.insert(vf, string.format("lavfi-crop=%d:%d:%d:%d", rw, rh, rx, ry))
     end
 
     if options.scale_height > 0 then
-        table.insert(vf, "lavfi-scale=-2:" .. tostring(options.scale_height))
+        local sh = options.scale_height - (options.scale_height % 2)
+        table.insert(vf, "lavfi-scale=-2:" .. tostring(sh))
     end
 
     if options.fps > 0 then
@@ -1058,7 +1337,7 @@ function MainPage:start_encode()
     }, function(success, res, err)
         is_encoding = false
         if success and res and res.status == 0 then
-            message("Encode Finished! Saved to:\\N" .. bold(out_path), 5)
+            message("Encode Finished! Saved to:\n" .. out_path, 5)
         else
             local err_output = (res and (res.stdout or res.stderr)) or err or ""
             msg.error("Encode failed with status: " .. tostring(res and res.status or -1))
@@ -1075,7 +1354,7 @@ function MainPage:start_encode()
             if detected_err == "" then
                 detected_err = "Process exited with code " .. tostring(res and res.status or -1)
             end
-            message("Encode Failed!\\N" .. bold(detected_err), 6)
+            message("Encode Failed!\n" .. detected_err, 6)
         end
     end)
 end
